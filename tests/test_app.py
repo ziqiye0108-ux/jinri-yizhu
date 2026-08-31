@@ -35,3 +35,20 @@ def test_non_draw_day_is_rejected():
     client = lottery_app.app.test_client()
     response = client.post("/api/recommend", json={"date": "2026-09-04"})
     assert response.status_code == 400
+
+
+def test_zhouyi_pick_is_deterministic_and_valid():
+    from backtest import zhouyi_pick
+    first = zhouyi_pick("2026-08-31")
+    second = zhouyi_pick("2026-08-31")
+    assert first == second
+    assert len(first["front"]) == len(set(first["front"])) == 5
+    assert len(first["back"]) == len(set(first["back"])) == 2
+    assert all(1 <= n <= 35 for n in first["front"])
+    assert all(1 <= n <= 12 for n in first["back"])
+
+
+def test_prize_rules_cover_old_and_new_versions():
+    from backtest import prize_level
+    assert prize_level("26013", 4, 2) == "四等奖"
+    assert prize_level("26014", 4, 2) == "三等奖"

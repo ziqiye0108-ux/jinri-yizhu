@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>周易选号实验回测</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+</head>
+<body>
+  <main>
+    <header>
+      <div><span>EXPERIMENT 01</span><h1>周易选号回测</h1><p>{{ report.method }} · 单式基本投注 · 每期 2 元</p></div>
+      <a href="/">返回前台</a>
+    </header>
+    <section class="summary">
+      <article><small>回测期数</small><strong>{{ report.draws }}</strong></article>
+      <article><small>中奖期数</small><strong>{{ report.winners }}</strong></article>
+      <article><small>累计投入</small><strong>¥{{ report.cost }}</strong></article>
+      <article><small>累计奖金</small><strong>¥{{ report.prize }}</strong></article>
+      <article class="{{ 'positive' if report.profit >= 0 else 'negative' }}"><small>净收益 / ROI</small><strong>¥{{ report.profit }} · {{ '%.1f'|format(report.roi) }}%</strong></article>
+    </section>
+    <section class="method">
+      <h2>固定实验口径</h2>
+      <p>以开奖日农历年支数、月、日及 21:25 亥时起梅花易数上下卦与动爻，再以固定卦数轮转映射为一注不重复的 5+2 号码。算法只读取开奖前已知信息，不读取当期开奖号码。</p>
+    </section>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>期号 / 日期</th><th>卦象</th><th>实验号码</th><th>开奖号码</th><th>命中</th><th>结果</th><th>奖金</th></tr></thead>
+        <tbody>
+          {% for row in report.rows %}
+          <tr class="{{ 'won' if row.level else '' }}">
+            <td><b>{{ row.issue }}</b><small>{{ row.date }}</small></td>
+            <td>上{{ row.pick.upper }}下{{ row.pick.lower }}<small>{{ row.pick.lunar }} · {{ row.pick.moving }}爻动</small></td>
+            <td><span class="front">{{ row.pick_front_text }}</span><span class="back">{{ row.pick_back_text }}</span></td>
+            <td><span class="front">{{ row.draw_front_text }}</span><span class="back">{{ row.draw_back_text }}</span></td>
+            <td>{{ row.front_hits }}+{{ row.back_hits }}</td>
+            <td>{{ row.level or '未中奖' }}</td>
+            <td>{{ '¥' ~ row.prize if row.prize else '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</body>
+</html>

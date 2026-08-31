@@ -7,6 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 import requests
+from bs4 import BeautifulSoup
 
 
 YEAR = datetime.now().year
@@ -15,6 +16,22 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "data" / f"dlt_{YEAR}.json"
 URL = "https://www.gdlottery.cn/f_html/kjgg/P085_{issue}.html"
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; DLTArchive/1.0)"}
+
+
+def parse_prizes(html: str) -> dict[str, int]:
+    soup = BeautifulSoup(html, "html.parser")
+    prizes = {}
+    for row in soup.select(".dlt_LotteryQk ul"):
+        values = list(row.stripped_strings)
+        if not values:
+            continue
+        level = next((v for v in values if re.fullmatch(r"[一二三四五六七八九]等奖", v)), None)
+        if not level:
+            continue
+        amounts = [v for v in values if re.fullmatch(r"[\d,]+(?:\.\d+)?元", v)]
+        if amounts:
+            prizes[level] = int(float(amounts[0].replace(",", "").removesuffix("元")))
+    return prizes
 
 
 def fetch(issue_number: int) -> dict | None:
@@ -41,15 +58,24 @@ def fetch(issue_number: int) -> dict | None:
             "date": draw_date.isoformat(),
             "front": front,
             "back": back,
+            "prizes": parse_prizes(response.text),
         }
     except (requests.RequestException, ValueError):
         return None
 
 
 def main() -> None:
-    # 大乐透通常每年不超过 160 期；并发读取不存在的未来公告会返回 404。
+    if OUTPUT.exists():
+        try:
+            previous = json.loads(OUTPUT.read_text(encoding="utf-8")).get("draws", [])
+            last_number = max(int(item["issue"][-3:]) for item in previous)
+            upper_bound = min(160, last_number + 3)
+        except (ValueError, KeyError, json.JSONDecodeError):
+            upper_bound = min(160, int(datetime.now().timetuple().tm_yday * 3 / 7) + 8)
+    else:
+        upper_bound = min(160, int(datetime.now().timetuple().tm_yday * 3 / 7) + 8)
     with ThreadPoolExecutor(max_workers=8) as pool:
-        futures = [pool.submit(fetch, number) for number in range(1, 161)]
+        futures = [pool.submit(fetch, number) for number in range(1, upper_bound + 1)]
         draws = [result for future in as_completed(futures) if (result := future.result())]
     draws.sort(key=lambda item: item["issue"])
     if not draws:
@@ -68,4 +94,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

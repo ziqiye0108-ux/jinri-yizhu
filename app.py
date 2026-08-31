@@ -3,10 +3,12 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import secrets
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
+from backtest import run_backtest
 
 ROOT = Path(__file__).parent
 DATA_FILE = ROOT / "data" / "dlt_2026.json"
@@ -108,6 +110,15 @@ def recommend():
 @app.get("/health")
 def health():
     return jsonify({"status": "ok", "draws": len(load_draws())})
+
+
+@app.get("/admin/backtest")
+def admin_backtest():
+    password = os.environ.get("ADMIN_PASSWORD")
+    auth = request.authorization
+    if not password or not auth or auth.username != "admin" or not secrets.compare_digest(auth.password, password):
+        return ("需要后台授权", 401, {"WWW-Authenticate": 'Basic realm="Backtest"'})
+    return render_template("admin_backtest.html", report=run_backtest(load_draws()))
 
 
 if __name__ == "__main__":
