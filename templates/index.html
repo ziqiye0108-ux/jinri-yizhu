@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f6f1e7">
   <title>今日一注 · 大乐透娱乐选号</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,7 +30,7 @@
         <label for="draw-date">开奖日期</label>
         <div class="controls">
           <input id="draw-date" name="date" type="date" min="{{ today }}" value="{{ today }}" required>
-          <button type="submit">给我一注 <span>→</span></button>
+          <button type="submit">给我一注 <span aria-hidden="true">→</span></button>
         </div>
       </form>
 
@@ -50,4 +50,3 @@
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
-
