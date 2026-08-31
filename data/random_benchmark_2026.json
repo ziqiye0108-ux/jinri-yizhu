@@ -1,0 +1,15 @@
+{
+  "trials": 10000,
+  "seed": 20260831,
+  "mean_wins": 6.613,
+  "median_wins": 6.0,
+  "wins_p05": 3,
+  "wins_p95": 11,
+  "mean_prize": 78.4096,
+  "median_prize": 43.0,
+  "prize_p05": 17,
+  "prize_p95": 187,
+  "chance_profit": 4.5,
+  "wins_percentile": 50.38,
+  "prize_percentile": 29.28
+}

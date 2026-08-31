@@ -9,10 +9,11 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
-from backtest import build_experiment_report
+from backtest import run_backtest
 
 ROOT = Path(__file__).parent
 DATA_FILE = ROOT / "data" / "dlt_2026.json"
+BENCHMARK_FILE = ROOT / "data" / "random_benchmark_2026.json"
 app = Flask(__name__)
 DRAW_WEEKDAYS = {0, 2, 5}  # 周一、周三、周六
 
@@ -44,7 +45,9 @@ def load_draws() -> list[dict]:
 
 @lru_cache(maxsize=4)
 def cached_experiment_report(data_mtime_ns: int) -> dict:
-    return build_experiment_report(load_draws())
+    report = run_backtest(load_draws())
+    report["benchmark"] = json.loads(BENCHMARK_FILE.read_text(encoding="utf-8"))
+    return report
 
 
 def recommendation(draw_date: str, draws: list[dict]) -> dict:
