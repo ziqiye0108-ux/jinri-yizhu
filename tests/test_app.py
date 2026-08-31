@@ -50,6 +50,9 @@ def test_zhouyi_pick_is_deterministic_and_valid():
 
 def test_prize_rules_cover_old_and_new_versions():
     from backtest import prize_level
+    assert prize_level("18001", 4, 2) == "三等奖"
+    assert prize_level("19018", 3, 2) == "四等奖"
+    assert prize_level("19019", 4, 2) == "四等奖"
     assert prize_level("26013", 4, 2) == "四等奖"
     assert prize_level("26014", 4, 2) == "三等奖"
 
@@ -65,8 +68,8 @@ def test_random_benchmark_is_reproducible():
 
 def test_load_draws_combines_all_cached_years():
     draws = lottery_app.load_draws()
-    assert len(draws) == 700
-    assert draws[0]["issue"] == "22001"
+    assert len(draws) == 1285
+    assert draws[0]["issue"] == "18001"
     assert draws[-1]["issue"] == "26098"
     assert all(draw.get("prizes") for draw in draws)
 

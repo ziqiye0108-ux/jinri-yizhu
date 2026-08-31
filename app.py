@@ -16,6 +16,7 @@ DATA_FILE = ROOT / "data" / "dlt_2026.json"
 BENCHMARK_FILE = ROOT / "data" / "random_benchmark_2022_2026.json"
 MODEL_EXPERIMENT_FILE = ROOT / "data" / "model_experiment_2022_2026.json"
 MULTIFACTOR_EXPERIMENT_FILE = ROOT / "data" / "multifactor_experiment_2022_2026.json"
+DECOUPLED_EXPERIMENT_FILE = ROOT / "data" / "decoupled_experiment_2018_2026.json"
 app = Flask(__name__)
 DRAW_WEEKDAYS = {0, 2, 5}  # 周一、周三、周六
 
@@ -50,10 +51,11 @@ def load_draws() -> list[dict]:
 @lru_cache(maxsize=4)
 def cached_experiment_report(data_mtime_ns: int) -> dict:
     draws = load_draws()
-    report = run_backtest(draws)
+    report = run_backtest([draw for draw in draws if draw["date"] >= "2022-01-01"])
     report["benchmark"] = json.loads(BENCHMARK_FILE.read_text(encoding="utf-8"))
     report["model_experiment"] = json.loads(MODEL_EXPERIMENT_FILE.read_text(encoding="utf-8"))
     report["multifactor"] = json.loads(MULTIFACTOR_EXPERIMENT_FILE.read_text(encoding="utf-8"))
+    report["decoupled"] = json.loads(DECOUPLED_EXPERIMENT_FILE.read_text(encoding="utf-8"))
     report["period_from"] = min(draw["date"] for draw in draws)
     report["period_to"] = max(draw["date"] for draw in draws)
     report["splits"] = {

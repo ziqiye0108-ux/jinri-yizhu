@@ -1,0 +1,302 @@
+{
+  "method": "前后区解耦多因子 v3",
+  "period": {
+    "from": "2018-01-01",
+    "to": "2026-08-29",
+    "draws": 1285
+  },
+  "data_note": "2017官方归档仅覆盖6月以后，本轮为避免不完整年度偏差，从2018开始。",
+  "selection_rule": "前区、后区分别按2018–2022平均命中选择；同分时优先年度波动更低。共现因子权重固定为0。",
+  "front_candidates": [
+    {
+      "config": {
+        "name": "前区均值回归",
+        "window": 100,
+        "frequency": -0.25,
+        "recent": 0.1,
+        "gap": 0.75,
+        "trend": -0.35,
+        "structure": 0.4
+      },
+      "average_hits": 0.6780141843971631,
+      "annual_means": {
+        "2018": 0.7295081967213115,
+        "2019": 0.6375838926174496,
+        "2020": 0.6716417910447762,
+        "2021": 0.6466666666666666,
+        "2022": 0.7133333333333334
+      },
+      "annual_std": 0.036171671168108606
+    },
+    {
+      "config": {
+        "name": "前区低自由度",
+        "window": 120,
+        "frequency": 0.5,
+        "recent": 0,
+        "gap": 0.2,
+        "trend": 0,
+        "structure": 0.25
+      },
+      "average_hits": 0.6893617021276596,
+      "annual_means": {
+        "2018": 0.6311475409836066,
+        "2019": 0.6711409395973155,
+        "2020": 0.6940298507462687,
+        "2021": 0.7333333333333333,
+        "2022": 0.7066666666666667
+      },
+      "annual_std": 0.03450690867813753
+    },
+    {
+      "config": {
+        "name": "前区温和趋势",
+        "window": 80,
+        "frequency": 0.3,
+        "recent": 0.25,
+        "gap": 0.1,
+        "trend": 0.25,
+        "structure": 0.35
+      },
+      "average_hits": 0.6666666666666666,
+      "annual_means": {
+        "2018": 0.6967213114754098,
+        "2019": 0.8523489932885906,
+        "2020": 0.6417910447761194,
+        "2021": 0.5666666666666667,
+        "2022": 0.58
+      },
+      "annual_std": 0.10344814807137089
+    },
+    {
+      "config": {
+        "name": "前区遗漏优先",
+        "window": 60,
+        "frequency": 0,
+        "recent": 0,
+        "gap": 1.0,
+        "trend": 0,
+        "structure": 0.3
+      },
+      "average_hits": 0.6865248226950355,
+      "annual_means": {
+        "2018": 0.6885245901639344,
+        "2019": 0.6510067114093959,
+        "2020": 0.7089552238805971,
+        "2021": 0.6533333333333333,
+        "2022": 0.7333333333333333
+      },
+      "annual_std": 0.0318122321852418
+    }
+  ],
+  "back_candidates": [
+    {
+      "config": {
+        "name": "后区均值回归",
+        "window": 80,
+        "frequency": -0.2,
+        "recent": 0.1,
+        "gap": 0.8,
+        "trend": -0.3,
+        "structure": 0.25
+      },
+      "average_hits": 0.3333333333333333,
+      "annual_means": {
+        "2018": 0.38524590163934425,
+        "2019": 0.348993288590604,
+        "2020": 0.3208955223880597,
+        "2021": 0.34,
+        "2022": 0.28
+      },
+      "annual_std": 0.03455255537970649
+    },
+    {
+      "config": {
+        "name": "后区低自由度",
+        "window": 120,
+        "frequency": 0.45,
+        "recent": 0,
+        "gap": 0.2,
+        "trend": 0,
+        "structure": 0.2
+      },
+      "average_hits": 0.35319148936170214,
+      "annual_means": {
+        "2018": 0.3360655737704918,
+        "2019": 0.3825503355704698,
+        "2020": 0.39552238805970147,
+        "2021": 0.32666666666666666,
+        "2022": 0.32666666666666666
+      },
+      "annual_std": 0.02950870280965164
+    },
+    {
+      "config": {
+        "name": "后区温和趋势",
+        "window": 60,
+        "frequency": 0.2,
+        "recent": 0.35,
+        "gap": 0.1,
+        "trend": 0.3,
+        "structure": 0.2
+      },
+      "average_hits": 0.3517730496453901,
+      "annual_means": {
+        "2018": 0.30327868852459017,
+        "2019": 0.4429530201342282,
+        "2020": 0.3582089552238806,
+        "2021": 0.36666666666666664,
+        "2022": 0.28
+      },
+      "annual_std": 0.056688736774623646
+    },
+    {
+      "config": {
+        "name": "后区遗漏优先",
+        "window": 50,
+        "frequency": 0,
+        "recent": 0,
+        "gap": 1.0,
+        "trend": 0,
+        "structure": 0.15
+      },
+      "average_hits": 0.3347517730496454,
+      "annual_means": {
+        "2018": 0.4098360655737705,
+        "2019": 0.348993288590604,
+        "2020": 0.31343283582089554,
+        "2021": 0.34,
+        "2022": 0.2733333333333333
+      },
+      "annual_std": 0.04487029342843396
+    }
+  ],
+  "selected_front": "前区低自由度",
+  "selected_back": "后区低自由度",
+  "windows": {
+    "selection_2018_2022": {
+      "front_config": {
+        "name": "前区低自由度",
+        "window": 120,
+        "frequency": 0.5,
+        "recent": 0,
+        "gap": 0.2,
+        "trend": 0,
+        "structure": 0.25
+      },
+      "back_config": {
+        "name": "后区低自由度",
+        "window": 120,
+        "frequency": 0.45,
+        "recent": 0,
+        "gap": 0.2,
+        "trend": 0,
+        "structure": 0.2
+      },
+      "draws": 705,
+      "winners": 47,
+      "prize": 285,
+      "cost": 1410,
+      "profit": -1125,
+      "roi": -79.7872340425532,
+      "avg_front_hits": 0.6893617021276596,
+      "avg_back_hits": 0.35319148936170214
+    },
+    "recheck_2023_2024": {
+      "front_config": {
+        "name": "前区低自由度",
+        "window": 120,
+        "frequency": 0.5,
+        "recent": 0,
+        "gap": 0.2,
+        "trend": 0,
+        "structure": 0.25
+      },
+      "back_config": {
+        "name": "后区低自由度",
+        "window": 120,
+        "frequency": 0.45,
+        "recent": 0,
+        "gap": 0.2,
+        "trend": 0,
+        "structure": 0.2
+      },
+      "draws": 302,
+      "winners": 21,
+      "prize": 125,
+      "cost": 604,
+      "profit": -479,
+      "roi": -79.30463576158941,
+      "avg_front_hits": 0.7119205298013245,
+      "avg_back_hits": 0.32781456953642385
+    },
+    "recheck_2025": {
+      "front_config": {
+        "name": "前区低自由度",
+        "window": 120,
+        "frequency": 0.5,
+        "recent": 0,
+        "gap": 0.2,
+        "trend": 0,
+        "structure": 0.25
+      },
+      "back_config": {
+        "name": "后区低自由度",
+        "window": 120,
+        "frequency": 0.45,
+        "recent": 0,
+        "gap": 0.2,
+        "trend": 0,
+        "structure": 0.2
+      },
+      "draws": 150,
+      "winners": 9,
+      "prize": 65,
+      "cost": 300,
+      "profit": -235,
+      "roi": -78.33333333333333,
+      "avg_front_hits": 0.6733333333333333,
+      "avg_back_hits": 0.32
+    },
+    "final_2026": {
+      "front_config": {
+        "name": "前区低自由度",
+        "window": 120,
+        "frequency": 0.5,
+        "recent": 0,
+        "gap": 0.2,
+        "trend": 0,
+        "structure": 0.25
+      },
+      "back_config": {
+        "name": "后区低自由度",
+        "window": 120,
+        "frequency": 0.45,
+        "recent": 0,
+        "gap": 0.2,
+        "trend": 0,
+        "structure": 0.2
+      },
+      "draws": 98,
+      "winners": 5,
+      "prize": 48,
+      "cost": 196,
+      "profit": -148,
+      "roi": -75.51020408163265,
+      "avg_front_hits": 0.7448979591836735,
+      "avg_back_hits": 0.30612244897959184
+    }
+  },
+  "permutation": {
+    "trials": 2000,
+    "seed": 20260901,
+    "observed_wins": 35,
+    "mean_permuted_wins": 50.29,
+    "win_percentile": 0.35000000000000003,
+    "observed_hits": 566,
+    "mean_permuted_hits": 648.4135,
+    "hit_percentile": 0.0
+  },
+  "decision": "reject",
+  "decision_reason": "未同时通过中奖次数与总命中的95百分位置换门槛，不进入前台"
+}

@@ -1,12 +1,15 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>选号策略实验室</title><link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}"></head>
 <body><main>
-<header class="topbar"><div><span class="eyebrow">BACKTEST LAB · 2022—2026</span><h1>选号策略实验室</h1><p>700 期官方数据 · 时间滚动验证 · 未通过策略不进入前台</p></div><a href="/">返回前台</a></header>
+<header class="topbar"><div><span class="eyebrow">BACKTEST LAB · 2018—2026</span><h1>选号策略实验室</h1><p>1,285 期官方数据 · 时间滚动验证 · 未通过策略不进入前台</p></div><a href="/">返回前台</a></header>
 <section class="hero-grid">
-  <article class="decision-card"><div><span class="status">候选观察</span><small>EXPERIMENT 03</small></div><h2>{{ report.multifactor.method }} · {{ report.multifactor.selected }}</h2><p>中奖次数在验证集显著高于随机，留出集略高于随机；但奖金仍低于随机均值，暂不具备上线依据。</p></article>
-  <article class="metric"><small>验证集中奖</small><strong>{{ report.multifactor.validation.winners }}<i> / {{ report.multifactor.validation.draws }}期</i></strong><p>随机平均 {{ '%.2f'|format(report.multifactor.random_validation.mean_wins) }} 期</p></article>
-  <article class="metric"><small>验证集奖金</small><strong>¥{{ report.multifactor.validation.prize }}</strong><p>随机平均 ¥{{ '%.2f'|format(report.multifactor.random_validation.mean_prize) }}</p></article>
-  <article class="metric"><small>2026 留出集</small><strong>{{ report.multifactor.holdout.winners }}<i> 期</i></strong><p>随机第 {{ '%.1f'|format(report.multifactor.random_holdout.wins_percentile) }} 百分位</p></article>
+  <article class="decision-card"><div><span class="rejected">已拒绝</span><small>EXPERIMENT 04</small></div><h2>{{ report.decoupled.method }}</h2><p>{{ report.decoupled.decision_reason }}。上一轮局部优势未能通过更长窗口检验。</p></article>
+  <article class="metric"><small>再验证中奖</small><strong>{{ report.decoupled.permutation.observed_wins }}<i> 期</i></strong><p>置换平均 {{ '%.2f'|format(report.decoupled.permutation.mean_permuted_wins) }} 期</p></article>
+  <article class="metric"><small>中奖置换百分位</small><strong>{{ '%.2f'|format(report.decoupled.permutation.win_percentile) }}%</strong><p>通过门槛为 95%</p></article>
+  <article class="metric"><small>总命中置换百分位</small><strong>{{ '%.2f'|format(report.decoupled.permutation.hit_percentile) }}%</strong><p>{{ report.decoupled.permutation.observed_hits }} vs 随机 {{ '%.2f'|format(report.decoupled.permutation.mean_permuted_hits) }}</p></article>
 </section>
+<section class="panel"><div class="section-head"><div><span class="eyebrow">EXPERIMENT 04 · WINDOWS</span><h2>前后区解耦再验证</h2></div><p>{{ report.decoupled.selected_front }} + {{ report.decoupled.selected_back }}</p></div><div class="year-grid">
+{% for key, item in report.decoupled.windows.items() %}<article class="{{ 'holdout' if key == 'final_2026' else '' }}"><small>{{ key|replace('_',' · ') }}</small><strong>{{ item.winners }} 次中奖</strong><p>奖金 ¥{{ item.prize }} · ROI {{ '%.1f'|format(item.roi) }}%</p><div class="hitline"><span>前区 {{ '%.3f'|format(item.avg_front_hits) }}</span><span>后区 {{ '%.3f'|format(item.avg_back_hits) }}</span></div></article>{% endfor %}
+</div><p class="data-note">{{ report.decoupled.data_note }}</p></section>
 <section class="panel"><div class="section-head"><div><span class="eyebrow">ROLLING VALIDATION</span><h2>年度稳定性</h2></div><p>模型每期只读取此前已开奖数据</p></div><div class="year-grid">
 {% for year, item in report.multifactor.yearly.items() %}<article><small>{{ year }}</small><strong>{{ item.winners }} 次中奖</strong><p>奖金 ¥{{ item.prize }} · ROI {{ '%.1f'|format(item.roi) }}%</p><div class="hitline"><span>前区 {{ '%.3f'|format(item.avg_front_hits) }}</span><span>后区 {{ '%.3f'|format(item.avg_back_hits) }}</span></div></article>{% endfor %}
 <article class="holdout"><small>2026 · 留出集</small><strong>{{ report.multifactor.holdout.winners }} 次中奖</strong><p>奖金 ¥{{ report.multifactor.holdout.prize }} · ROI {{ '%.1f'|format(report.multifactor.holdout.roi) }}%</p><div class="hitline"><span>前区 {{ '%.3f'|format(report.multifactor.holdout.avg_front_hits) }}</span><span>后区 {{ '%.3f'|format(report.multifactor.holdout.avg_back_hits) }}</span></div></article>
@@ -16,6 +19,7 @@
 <section class="panel"><div class="section-head"><div><span class="eyebrow">MODEL SELECTION</span><h2>候选策略</h2></div><p>仅使用验证期选择</p></div><table><thead><tr><th>策略</th><th>中奖</th><th>奖金</th><th>ROI</th></tr></thead><tbody>{% for item in report.multifactor.candidates %}<tr class="{{ 'selected' if item.config.name == report.multifactor.selected else '' }}"><td><b>{{ item.config.name }}</b></td><td>{{ item.winners }}</td><td>¥{{ item.prize }}</td><td>{{ '%.1f'|format(item.roi) }}%</td></tr>{% endfor %}</tbody></table></section>
 </div>
 <section class="panel"><div class="section-head"><div><span class="eyebrow">ARCHIVE</span><h2>历史实验</h2></div><p>负结果保留，不重复包装</p></div><div class="archive-grid">
+<article><span class="status">曾列候选</span><h3>{{ report.multifactor.method }}</h3><p>五年窗口曾出现中奖次数优势，但扩展到九年并做置换检验后未能延续，已降级为历史观察。</p></article>
 <article><span class="rejected">已拒绝</span><h3>周易选号 v1</h3><p>700 期中奖 {{ report.winners }} 次，奖金 ¥{{ report.prize }}；奖金仅处于随机第 {{ '%.1f'|format(report.benchmark.prize_percentile) }} 百分位。</p></article>
 <article><span class="rejected">已拒绝</span><h3>{{ report.model_experiment.method }}</h3><p>2026 留出集仅中奖 {{ report.model_experiment.holdout.winners }} 次、奖金 ¥{{ report.model_experiment.holdout.prize }}，显著低于随机。</p></article>
 </div></section>

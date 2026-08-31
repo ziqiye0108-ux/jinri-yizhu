@@ -52,6 +52,14 @@ def zhouyi_pick(draw_date: str) -> dict:
 
 def prize_level(issue: str, front_hits: int, back_hits: int) -> str | None:
     hits = (front_hits, back_hits)
+    if int(issue) < 19019:
+        six_tier_rules = {
+            (5, 2): "一等奖", (5, 1): "二等奖", (5, 0): "三等奖", (4, 2): "三等奖",
+            (4, 1): "四等奖", (3, 2): "四等奖", (4, 0): "五等奖", (3, 1): "五等奖",
+            (2, 2): "五等奖", (3, 0): "六等奖", (2, 1): "六等奖", (1, 2): "六等奖",
+            (0, 2): "六等奖",
+        }
+        return six_tier_rules.get(hits)
     if int(issue) < 26014:
         old_rules = {
             (5, 2): "一等奖", (5, 1): "二等奖", (5, 0): "三等奖",
