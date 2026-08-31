@@ -78,3 +78,25 @@ def test_model_strategy_never_reads_current_draw():
     mutated_future = {"date": "2022-06-01", "front": [1, 2, 3, 4, 5], "back": [1, 2]}
     second = model_pick(history, mutated_future["date"], CANDIDATES[0])
     assert first == second
+
+
+def test_multifactor_pick_is_deterministic_and_valid():
+    from multifactor_strategy import CANDIDATES, fusion_pick
+    history = lottery_app.load_draws()[:80]
+    first = fusion_pick(history, "2022-08-01", CANDIDATES[0])
+    second = fusion_pick(history, "2022-08-01", CANDIDATES[0])
+    assert first == second
+    assert len(first["front"]) == len(set(first["front"])) == 5
+    assert len(first["back"]) == len(set(first["back"])) == 2
+
+
+def test_admin_renders_multifactor_experiment(monkeypatch):
+    monkeypatch.setenv("ADMIN_PASSWORD", "test")
+    lottery_app.cached_experiment_report.cache_clear()
+    response = lottery_app.app.test_client().get(
+        "/admin/backtest", headers={"Authorization": "Basic YWRtaW46dGVzdA=="}
+    )
+    page = response.get_data(as_text=True)
+    assert response.status_code == 200
+    assert "多因子融合 v2" in page
+    assert "因子消融" in page
