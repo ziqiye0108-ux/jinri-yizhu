@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f1e7">
+  <title>今日一注 · 大乐透娱乐选号</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <span class="eyebrow">JUST FOR FUN · 仅供娱乐</span>
+      <h1>今日一注</h1>
+      <p class="lede">选一个开奖日期，收下一组不会与本年度历史开奖号码完全相同的大乐透号码。</p>
+    </header>
+
+    <section class="card" aria-labelledby="picker-title">
+      <div class="card-head">
+        <div>
+          <span class="step">01</span>
+          <h2 id="picker-title">选择开奖日期</h2>
+        </div>
+        <span class="archive">已核对 {{ draw_count }} 期{% if latest %} · 更新至 {{ latest.date }}{% endif %}</span>
+      </div>
+      <form id="pick-form">
+        <label for="draw-date">开奖日期</label>
+        <div class="controls">
+          <input id="draw-date" name="date" type="date" min="{{ today }}" value="{{ today }}" required>
+          <button type="submit">给我一注 <span>→</span></button>
+        </div>
+      </form>
+
+      <div id="result" class="result" hidden aria-live="polite">
+        <div class="rule"><span></span><b>你的号码</b><span></span></div>
+        <div class="balls" id="balls"></div>
+        <p id="result-meta"></p>
+      </div>
+      <p id="error" class="error" hidden></p>
+    </section>
+
+    <footer>
+      <p>随机不等于预测。理性购彩，未成年人不得购买彩票。</p>
+      <span>数据每日 00:00 自动核对官方公告</span>
+    </footer>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
+
