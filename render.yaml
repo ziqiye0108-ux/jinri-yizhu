@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: jinri-yizhu
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    previews:
+      generation: manual
+
