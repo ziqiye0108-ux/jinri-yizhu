@@ -10,7 +10,8 @@ from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
 from backtest import run_backtest
-from multifactor_strategy import CANDIDATES as FUSION_CANDIDATES, fusion_pick
+from multifactor_strategy import CANDIDATES as FUSION_CANDIDATES
+from hybrid_strategy import hybrid_pick
 
 ROOT = Path(__file__).parent
 DATA_FILE = ROOT / "data" / "dlt_2026.json"
@@ -75,12 +76,13 @@ def recommendation(draw_date: str, draws: list[dict]) -> dict:
         if item.get("date", "").startswith(draw_date[:4])
     }
     prior_draws = [draw for draw in draws if draw.get("date", "") < draw_date]
-    model_result = fusion_pick(prior_draws, draw_date, ACTIVE_PICK_CONFIG)
+    model_result = hybrid_pick(prior_draws, draw_date, ACTIVE_PICK_CONFIG)
     if tuple(model_result["front"] + model_result["back"]) not in existing:
         return {
             "front": model_result["front"],
             "back": model_result["back"],
-            "strategy": "多因子融合 v2 · 均值回归",
+            "strategy": model_result["strategy"],
+            "dateBasis": model_result["date_basis"],
         }
 
     history_fingerprint = "|".join(
@@ -104,7 +106,7 @@ def recommendation(draw_date: str, draws: list[dict]) -> dict:
         front.sort()
         back.sort()
         if tuple(front + back) not in existing:
-            return {"front": front, "back": back, "strategy": "多因子融合 v2 · 碰撞回退"}
+            return {"front": front, "back": back, "strategy": "多因子+日期卦象 · 碰撞回退"}
         nonce += 1
 
 

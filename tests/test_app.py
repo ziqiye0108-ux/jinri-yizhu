@@ -24,7 +24,16 @@ def test_active_recommendation_uses_only_prior_draws():
     draws_with_future = draws + [{"issue": "26999", "date": "2026-09-05", "front": [1, 2, 3, 4, 5], "back": [1, 2]}]
     second = lottery_app.recommendation("2026-09-02", draws_with_future)
     assert first == second
-    assert first["strategy"].startswith("多因子融合 v2")
+    assert first["strategy"].startswith("多因子 80%")
+
+
+def test_different_draw_dates_produce_different_hybrid_picks():
+    draws = lottery_app.load_draws()
+    monday = lottery_app.recommendation("2026-09-07", draws)
+    wednesday = lottery_app.recommendation("2026-09-09", draws)
+    saturday = lottery_app.recommendation("2026-09-12", draws)
+    combinations = {(tuple(item["front"]), tuple(item["back"])) for item in [monday, wednesday, saturday]}
+    assert len(combinations) == 3
 
 
 def test_health_endpoint():
