@@ -69,3 +69,12 @@ def test_load_draws_combines_all_cached_years():
     assert draws[0]["issue"] == "22001"
     assert draws[-1]["issue"] == "26098"
     assert all(draw.get("prizes") for draw in draws)
+
+
+def test_model_strategy_never_reads_current_draw():
+    from model_strategy import CANDIDATES, model_pick
+    history = lottery_app.load_draws()[:60]
+    first = model_pick(history, "2022-06-01", CANDIDATES[0])
+    mutated_future = {"date": "2022-06-01", "front": [1, 2, 3, 4, 5], "back": [1, 2]}
+    second = model_pick(history, mutated_future["date"], CANDIDATES[0])
+    assert first == second

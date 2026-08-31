@@ -14,6 +14,7 @@ from backtest import run_backtest
 ROOT = Path(__file__).parent
 DATA_FILE = ROOT / "data" / "dlt_2026.json"
 BENCHMARK_FILE = ROOT / "data" / "random_benchmark_2022_2026.json"
+MODEL_EXPERIMENT_FILE = ROOT / "data" / "model_experiment_2022_2026.json"
 app = Flask(__name__)
 DRAW_WEEKDAYS = {0, 2, 5}  # 周一、周三、周六
 
@@ -50,6 +51,7 @@ def cached_experiment_report(data_mtime_ns: int) -> dict:
     draws = load_draws()
     report = run_backtest(draws)
     report["benchmark"] = json.loads(BENCHMARK_FILE.read_text(encoding="utf-8"))
+    report["model_experiment"] = json.loads(MODEL_EXPERIMENT_FILE.read_text(encoding="utf-8"))
     report["period_from"] = min(draw["date"] for draw in draws)
     report["period_to"] = max(draw["date"] for draw in draws)
     report["splits"] = {
