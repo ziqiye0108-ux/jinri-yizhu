@@ -15,7 +15,6 @@
     <header>
       <span class="eyebrow">JUST FOR FUN · 仅供娱乐</span>
       <h1>今日一注</h1>
-      <p class="lede">选一个开奖日期，收下一组不会与本年度历史开奖号码完全相同的大乐透号码。</p>
     </header>
 
     <section class="card" aria-labelledby="picker-title">
@@ -24,7 +23,6 @@
           <span class="step">01</span>
           <h2 id="picker-title">选择开奖日期</h2>
         </div>
-        <span class="archive">已核对 {{ draw_count }} 期{% if latest %} · 更新至 {{ latest.date }}{% endif %}</span>
       </div>
       <form id="pick-form">
         <label for="draw-date">开奖日期</label>
@@ -45,10 +43,6 @@
       <p id="error" class="error" hidden></p>
     </section>
 
-    <footer>
-      <p>随机不等于预测。理性购彩，未成年人不得购买彩票。</p>
-      <span>数据每日 00:00 自动核对官方公告</span>
-    </footer>
   </main>
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
