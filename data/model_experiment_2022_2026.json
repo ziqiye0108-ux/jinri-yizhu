@@ -1,0 +1,167 @@
+{
+  "method": "滚动时序集成 v1",
+  "selection_rule": "仅按2022–2024训练集奖金选择，中奖期数用于同奖金额破同分",
+  "candidates": [
+    {
+      "config": {
+        "name": "长期热度",
+        "window": 60,
+        "frequency": 1.0,
+        "recent": 0.2,
+        "gap": -0.1,
+        "trend": 0.1
+      },
+      "draws": 422,
+      "winners": 26,
+      "cost": 844,
+      "prize": 335,
+      "profit": -509,
+      "roi": -60.308056872037916
+    },
+    {
+      "config": {
+        "name": "短期趋势",
+        "window": 40,
+        "frequency": 0.2,
+        "recent": 1.0,
+        "gap": -0.2,
+        "trend": 0.8
+      },
+      "draws": 422,
+      "winners": 28,
+      "cost": 844,
+      "prize": 150,
+      "profit": -694,
+      "roi": -82.22748815165876
+    },
+    {
+      "config": {
+        "name": "均值回归",
+        "window": 80,
+        "frequency": -0.4,
+        "recent": 0.1,
+        "gap": 1.0,
+        "trend": -0.4
+      },
+      "draws": 422,
+      "winners": 40,
+      "cost": 844,
+      "prize": 230,
+      "profit": -614,
+      "roi": -72.74881516587678
+    },
+    {
+      "config": {
+        "name": "冷热平衡",
+        "window": 60,
+        "frequency": 0.4,
+        "recent": -0.2,
+        "gap": 0.5,
+        "trend": 0.3
+      },
+      "draws": 422,
+      "winners": 25,
+      "cost": 844,
+      "prize": 260,
+      "profit": -584,
+      "roi": -69.19431279620854
+    },
+    {
+      "config": {
+        "name": "长短集成",
+        "window": 100,
+        "frequency": 0.6,
+        "recent": 0.5,
+        "gap": 0.2,
+        "trend": 0.4
+      },
+      "draws": 422,
+      "winners": 23,
+      "cost": 844,
+      "prize": 115,
+      "profit": -729,
+      "roi": -86.37440758293839
+    }
+  ],
+  "selected": "长期热度",
+  "training": {
+    "config": {
+      "name": "长期热度",
+      "window": 60,
+      "frequency": 1.0,
+      "recent": 0.2,
+      "gap": -0.1,
+      "trend": 0.1
+    },
+    "draws": 422,
+    "winners": 26,
+    "cost": 844,
+    "prize": 335,
+    "profit": -509,
+    "roi": -60.308056872037916
+  },
+  "validation": {
+    "config": {
+      "name": "长期热度",
+      "window": 60,
+      "frequency": 1.0,
+      "recent": 0.2,
+      "gap": -0.1,
+      "trend": 0.1
+    },
+    "draws": 150,
+    "winners": 9,
+    "cost": 300,
+    "prize": 55,
+    "profit": -245,
+    "roi": -81.66666666666667
+  },
+  "holdout": {
+    "config": {
+      "name": "长期热度",
+      "window": 60,
+      "frequency": 1.0,
+      "recent": 0.2,
+      "gap": -0.1,
+      "trend": 0.1
+    },
+    "draws": 98,
+    "winners": 1,
+    "cost": 196,
+    "prize": 5,
+    "profit": -191,
+    "roi": -97.44897959183673
+  },
+  "random_validation": {
+    "trials": 10000,
+    "seed": 20250101,
+    "mean_wins": 9.9371,
+    "median_wins": 10.0,
+    "wins_p05": 5,
+    "wins_p95": 15,
+    "mean_prize": 91.748,
+    "median_prize": 60.0,
+    "prize_p05": 30,
+    "prize_p95": 235,
+    "chance_profit": 2.34,
+    "wins_percentile": 46.06,
+    "prize_percentile": 46.79
+  },
+  "random_holdout": {
+    "trials": 10000,
+    "seed": 20260101,
+    "mean_wins": 6.5074,
+    "median_wins": 6.0,
+    "wins_p05": 3,
+    "wins_p95": 11,
+    "mean_prize": 59.5323,
+    "median_prize": 42.0,
+    "prize_p05": 17,
+    "prize_p95": 183,
+    "chance_profit": 4.130000000000001,
+    "wins_percentile": 1.06,
+    "prize_percentile": 0.67
+  },
+  "decision": "reject",
+  "decision_reason": "验证集与留出集均未稳定优于随机基线，不进入前台选号"
+}

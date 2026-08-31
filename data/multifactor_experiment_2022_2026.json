@@ -1,0 +1,343 @@
+{
+  "method": "多因子融合 v2",
+  "decision": "pass",
+  "selection_rule": "2023–2025滚动验证优先比较中奖稳定性与平均命中，奖金仅破同分",
+  "selected": "均值回归",
+  "candidates": [
+    {
+      "config": {
+        "name": "均衡融合",
+        "window": 80,
+        "frequency": 0.45,
+        "recent": 0.25,
+        "gap": 0.25,
+        "trend": 0.25,
+        "association": 0.3,
+        "structure": 0.35
+      },
+      "draws": 452,
+      "winners": 31,
+      "cost": 904,
+      "prize": 165,
+      "profit": -739,
+      "roi": -81.74778761061947,
+      "avg_front_hits": 0.661504424778761,
+      "avg_back_hits": 0.2942477876106195
+    },
+    {
+      "config": {
+        "name": "趋势增强",
+        "window": 60,
+        "frequency": 0.2,
+        "recent": 0.55,
+        "gap": -0.15,
+        "trend": 0.7,
+        "association": 0.25,
+        "structure": 0.3
+      },
+      "draws": 452,
+      "winners": 25,
+      "cost": 904,
+      "prize": 125,
+      "profit": -779,
+      "roi": -86.17256637168141,
+      "avg_front_hits": 0.7367256637168141,
+      "avg_back_hits": 0.2920353982300885
+    },
+    {
+      "config": {
+        "name": "均值回归",
+        "window": 100,
+        "frequency": -0.25,
+        "recent": 0.1,
+        "gap": 0.75,
+        "trend": -0.35,
+        "association": 0.2,
+        "structure": 0.4
+      },
+      "draws": 452,
+      "winners": 40,
+      "cost": 904,
+      "prize": 240,
+      "profit": -664,
+      "roi": -73.45132743362832,
+      "avg_front_hits": 0.7433628318584071,
+      "avg_back_hits": 0.29867256637168144
+    },
+    {
+      "config": {
+        "name": "关联增强",
+        "window": 80,
+        "frequency": 0.25,
+        "recent": 0.2,
+        "gap": 0.2,
+        "trend": 0.15,
+        "association": 0.85,
+        "structure": 0.3
+      },
+      "draws": 452,
+      "winners": 25,
+      "cost": 904,
+      "prize": 135,
+      "profit": -769,
+      "roi": -85.06637168141593,
+      "avg_front_hits": 0.665929203539823,
+      "avg_back_hits": 0.3141592920353982
+    },
+    {
+      "config": {
+        "name": "形态增强",
+        "window": 100,
+        "frequency": 0.3,
+        "recent": 0.2,
+        "gap": 0.2,
+        "trend": 0.15,
+        "association": 0.25,
+        "structure": 0.9
+      },
+      "draws": 452,
+      "winners": 34,
+      "cost": 904,
+      "prize": 180,
+      "profit": -724,
+      "roi": -80.08849557522124,
+      "avg_front_hits": 0.6836283185840708,
+      "avg_back_hits": 0.32079646017699115
+    },
+    {
+      "config": {
+        "name": "低自由度",
+        "window": 120,
+        "frequency": 0.5,
+        "recent": 0,
+        "gap": 0.2,
+        "trend": 0,
+        "association": 0,
+        "structure": 0.25
+      },
+      "draws": 452,
+      "winners": 29,
+      "cost": 904,
+      "prize": 185,
+      "profit": -719,
+      "roi": -79.53539823008849,
+      "avg_front_hits": 0.6991150442477876,
+      "avg_back_hits": 0.3252212389380531
+    }
+  ],
+  "validation": {
+    "config": {
+      "name": "均值回归",
+      "window": 100,
+      "frequency": -0.25,
+      "recent": 0.1,
+      "gap": 0.75,
+      "trend": -0.35,
+      "association": 0.2,
+      "structure": 0.4
+    },
+    "draws": 452,
+    "winners": 40,
+    "cost": 904,
+    "prize": 240,
+    "profit": -664,
+    "roi": -73.45132743362832,
+    "avg_front_hits": 0.7433628318584071,
+    "avg_back_hits": 0.29867256637168144
+  },
+  "yearly": {
+    "2023": {
+      "config": {
+        "name": "均值回归",
+        "window": 100,
+        "frequency": -0.25,
+        "recent": 0.1,
+        "gap": 0.75,
+        "trend": -0.35,
+        "association": 0.2,
+        "structure": 0.4
+      },
+      "draws": 150,
+      "winners": 18,
+      "cost": 300,
+      "prize": 110,
+      "profit": -190,
+      "roi": -63.33333333333333,
+      "avg_front_hits": 0.72,
+      "avg_back_hits": 0.32
+    },
+    "2024": {
+      "config": {
+        "name": "均值回归",
+        "window": 100,
+        "frequency": -0.25,
+        "recent": 0.1,
+        "gap": 0.75,
+        "trend": -0.35,
+        "association": 0.2,
+        "structure": 0.4
+      },
+      "draws": 152,
+      "winners": 13,
+      "cost": 304,
+      "prize": 65,
+      "profit": -239,
+      "roi": -78.61842105263158,
+      "avg_front_hits": 0.8223684210526315,
+      "avg_back_hits": 0.26973684210526316
+    },
+    "2025": {
+      "config": {
+        "name": "均值回归",
+        "window": 100,
+        "frequency": -0.25,
+        "recent": 0.1,
+        "gap": 0.75,
+        "trend": -0.35,
+        "association": 0.2,
+        "structure": 0.4
+      },
+      "draws": 150,
+      "winners": 9,
+      "cost": 300,
+      "prize": 65,
+      "profit": -235,
+      "roi": -78.33333333333333,
+      "avg_front_hits": 0.6866666666666666,
+      "avg_back_hits": 0.30666666666666664
+    }
+  },
+  "ablations": [
+    {
+      "config": {
+        "name": "完整模型",
+        "window": 100,
+        "frequency": -0.25,
+        "recent": 0.1,
+        "gap": 0.75,
+        "trend": -0.35,
+        "association": 0.2,
+        "structure": 0.4
+      },
+      "draws": 452,
+      "winners": 40,
+      "cost": 904,
+      "prize": 240,
+      "profit": -664,
+      "roi": -73.45132743362832,
+      "avg_front_hits": 0.7433628318584071,
+      "avg_back_hits": 0.29867256637168144
+    },
+    {
+      "config": {
+        "name": "去除时序",
+        "window": 100,
+        "frequency": 0,
+        "recent": 0,
+        "gap": 0,
+        "trend": 0,
+        "association": 0.2,
+        "structure": 0.4
+      },
+      "draws": 452,
+      "winners": 38,
+      "cost": 904,
+      "prize": 230,
+      "profit": -674,
+      "roi": -74.5575221238938,
+      "avg_front_hits": 0.7654867256637168,
+      "avg_back_hits": 0.35398230088495575
+    },
+    {
+      "config": {
+        "name": "去除关联",
+        "window": 100,
+        "frequency": -0.25,
+        "recent": 0.1,
+        "gap": 0.75,
+        "trend": -0.35,
+        "association": 0,
+        "structure": 0.4
+      },
+      "draws": 452,
+      "winners": 40,
+      "cost": 904,
+      "prize": 240,
+      "profit": -664,
+      "roi": -73.45132743362832,
+      "avg_front_hits": 0.7477876106194691,
+      "avg_back_hits": 0.3030973451327434
+    },
+    {
+      "config": {
+        "name": "去除形态",
+        "window": 100,
+        "frequency": -0.25,
+        "recent": 0.1,
+        "gap": 0.75,
+        "trend": -0.35,
+        "association": 0.2,
+        "structure": 0
+      },
+      "draws": 452,
+      "winners": 34,
+      "cost": 904,
+      "prize": 190,
+      "profit": -714,
+      "roi": -78.98230088495575,
+      "avg_front_hits": 0.7256637168141593,
+      "avg_back_hits": 0.2920353982300885
+    }
+  ],
+  "holdout": {
+    "config": {
+      "name": "均值回归",
+      "window": 100,
+      "frequency": -0.25,
+      "recent": 0.1,
+      "gap": 0.75,
+      "trend": -0.35,
+      "association": 0.2,
+      "structure": 0.4
+    },
+    "draws": 98,
+    "winners": 7,
+    "cost": 196,
+    "prize": 35,
+    "profit": -161,
+    "roi": -82.14285714285714,
+    "avg_front_hits": 0.6224489795918368,
+    "avg_back_hits": 0.40816326530612246
+  },
+  "random_validation": {
+    "trials": 10000,
+    "seed": 20230501,
+    "mean_wins": 30.1827,
+    "median_wins": 30.0,
+    "wins_p05": 22,
+    "wins_p95": 39,
+    "mean_prize": 308.4771,
+    "median_prize": 190.0,
+    "prize_p05": 125,
+    "prize_p95": 480,
+    "chance_profit": 0.52,
+    "wins_percentile": 96.97,
+    "prize_percentile": 73.2
+  },
+  "random_holdout": {
+    "trials": 10000,
+    "seed": 20260501,
+    "mean_wins": 6.5798,
+    "median_wins": 6.0,
+    "wins_p05": 3,
+    "wins_p95": 11,
+    "mean_prize": 68.0316,
+    "median_prize": 43.0,
+    "prize_p05": 17,
+    "prize_p95": 189,
+    "chance_profit": 4.5600000000000005,
+    "wins_percentile": 66.23,
+    "prize_percentile": 34.35
+  },
+  "decision_reason": "通过预设门槛，可进入候选观察"
+}

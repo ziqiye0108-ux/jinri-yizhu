@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f1e7">
+  <title>今日一注 · 大乐透娱乐选号</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <span class="eyebrow">JUST FOR FUN · 仅供娱乐</span>
+      <h1>今日一注</h1>
+    </header>
+
+    <section class="card" aria-labelledby="picker-title">
+      <div class="card-head">
+        <div>
+          <span class="step">01</span>
+          <h2 id="picker-title">选择开奖日期</h2>
+        </div>
+      </div>
+      <form id="pick-form">
+        <span class="field-label">未来开奖日</span>
+        <div class="controls">
+          <button class="date-picker-trigger" id="date-picker-trigger" type="button" aria-haspopup="dialog">
+            <span class="calendar-icon" aria-hidden="true"></span>
+            <span><small>{{ upcoming[0].weekday }}</small><strong id="selected-date-text">{{ upcoming[0].display }}</strong></span>
+            <span class="chevron" aria-hidden="true">›</span>
+          </button>
+          <input id="draw-date" name="date" value="{{ upcoming[0].value }}" hidden>
+          <button id="recommend-button" type="submit">给我一注 <span aria-hidden="true">→</span></button>
+        </div>
+      </form>
+
+      <div id="result" class="result" hidden aria-live="polite">
+        <div class="rule"><span></span><b>你的号码</b><span></span></div>
+        <div class="balls" id="balls"></div>
+        <p id="result-meta"></p>
+      </div>
+      <p id="error" class="error" hidden></p>
+    </section>
+
+  </main>
+  <div class="calendar-sheet" id="calendar-sheet" hidden>
+    <button class="sheet-backdrop" type="button" aria-label="关闭日期选择"></button>
+    <section class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="calendar-title">
+      <div class="sheet-handle"></div>
+      <div class="calendar-head">
+        <button id="prev-month" type="button" aria-label="上个月">‹</button>
+        <h3 id="calendar-title"></h3>
+        <button id="next-month" type="button" aria-label="下个月">›</button>
+      </div>
+      <div class="weekdays"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+      <p class="calendar-hint">仅周一、周三、周六为大乐透开奖日</p>
+    </section>
+  </div>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
