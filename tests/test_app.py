@@ -18,6 +18,15 @@ def test_same_date_is_stable():
     assert lottery_app.recommendation("2026-09-02", []) == lottery_app.recommendation("2026-09-02", [])
 
 
+def test_active_recommendation_uses_only_prior_draws():
+    draws = lottery_app.load_draws()
+    first = lottery_app.recommendation("2026-09-02", draws)
+    draws_with_future = draws + [{"issue": "26999", "date": "2026-09-05", "front": [1, 2, 3, 4, 5], "back": [1, 2]}]
+    second = lottery_app.recommendation("2026-09-02", draws_with_future)
+    assert first == second
+    assert first["strategy"].startswith("多因子融合 v2")
+
+
 def test_health_endpoint():
     client = lottery_app.app.test_client()
     response = client.get("/health")

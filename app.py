@@ -10,6 +10,7 @@ from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
 from backtest import run_backtest
+from multifactor_strategy import CANDIDATES as FUSION_CANDIDATES, fusion_pick
 
 ROOT = Path(__file__).parent
 DATA_FILE = ROOT / "data" / "dlt_2026.json"
@@ -19,6 +20,7 @@ MULTIFACTOR_EXPERIMENT_FILE = ROOT / "data" / "multifactor_experiment_2022_2026.
 DECOUPLED_EXPERIMENT_FILE = ROOT / "data" / "decoupled_experiment_2018_2026.json"
 app = Flask(__name__)
 DRAW_WEEKDAYS = {0, 2, 5}  # 周一、周三、周六
+ACTIVE_PICK_CONFIG = next(config for config in FUSION_CANDIDATES if config.name == "均值回归")
 
 
 def upcoming_draw_dates(start: date, count: int = 6) -> list[dict]:
@@ -72,6 +74,15 @@ def recommendation(draw_date: str, draws: list[dict]) -> dict:
         for item in draws
         if item.get("date", "").startswith(draw_date[:4])
     }
+    prior_draws = [draw for draw in draws if draw.get("date", "") < draw_date]
+    model_result = fusion_pick(prior_draws, draw_date, ACTIVE_PICK_CONFIG)
+    if tuple(model_result["front"] + model_result["back"]) not in existing:
+        return {
+            "front": model_result["front"],
+            "back": model_result["back"],
+            "strategy": "多因子融合 v2 · 均值回归",
+        }
+
     history_fingerprint = "|".join(
         f'{d["issue"]}:{",".join(map(str, d["front"] + d["back"]))}' for d in draws
     )
@@ -93,7 +104,7 @@ def recommendation(draw_date: str, draws: list[dict]) -> dict:
         front.sort()
         back.sort()
         if tuple(front + back) not in existing:
-            return {"front": front, "back": back}
+            return {"front": front, "back": back, "strategy": "多因子融合 v2 · 碰撞回退"}
         nonce += 1
 
 
@@ -127,7 +138,7 @@ def recommend():
             "date": value,
             "checkedAgainst": len(draws),
             "year": selected.year,
-            "notice": "号码仅供娱乐，由确定性随机算法生成，不代表中奖预测。",
+            "notice": "号码仅供娱乐，由历史多因子规则生成，不代表中奖预测或收益承诺。",
         }
     )
 
