@@ -10,7 +10,7 @@
 <body>
   <main>
     <header>
-      <div><span>EXPERIMENT 01</span><h1>周易选号回测</h1><p>{{ report.method }} · 单式基本投注 · 每期 2 元</p></div>
+      <div><span>EXPERIMENT 01 · FIVE-YEAR BASELINE</span><h1>周易选号回测</h1><p>{{ report.period_from }} 至 {{ report.period_to }} · {{ report.method }} · 每期 2 元</p></div>
       <a href="/">返回前台</a>
     </header>
     <section class="summary">
@@ -23,6 +23,7 @@
     <section class="method">
       <h2>固定实验口径</h2>
       <p>以开奖日农历年支数、月、日及 21:25 亥时起梅花易数上下卦与动爻，再以固定卦数轮转映射为一注不重复的 5+2 号码。算法只读取开奖前已知信息，不读取当期开奖号码。</p>
+      <p><strong>后续改进的数据隔离：</strong>2022–2024 训练集 {{ report.splits.training }} 期；2025 验证集 {{ report.splits.validation }} 期；2026 留出测试集 {{ report.splits.holdout }} 期。调整策略时不读取留出集结果。</p>
     </section>
     <section class="benchmark">
       <div class="benchmark-head"><div><span>RANDOM BASELINE</span><h2>10,000 组随机基准</h2></div><small>固定种子 {{ report.benchmark.seed }} · 可复现</small></div>

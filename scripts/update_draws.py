@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -11,9 +12,7 @@ from bs4 import BeautifulSoup
 
 
 YEAR = datetime.now().year
-YEAR_PREFIX = str(YEAR)[-2:]
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "data" / f"dlt_{YEAR}.json"
 URL = "https://www.gdlottery.cn/f_html/kjgg/P085_{issue}.html"
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; DLTArchive/1.0)"}
 
@@ -34,8 +33,8 @@ def parse_prizes(html: str) -> dict[str, int]:
     return prizes
 
 
-def fetch(issue_number: int) -> dict | None:
-    issue = f"{YEAR_PREFIX}{issue_number:03d}"
+def fetch(issue_number: int, year: int = YEAR) -> dict | None:
+    issue = f"{str(year)[-2:]}{issue_number:03d}"
     try:
         response = requests.get(URL.format(issue=issue), headers=HEADERS, timeout=15)
         if response.status_code != 200:
@@ -64,10 +63,13 @@ def fetch(issue_number: int) -> dict | None:
         return None
 
 
-def main() -> None:
-    if OUTPUT.exists():
+def update_year(year: int, full_history: bool = False) -> None:
+    output = ROOT / "data" / f"dlt_{year}.json"
+    if full_history:
+        upper_bound = 160
+    elif output.exists():
         try:
-            previous = json.loads(OUTPUT.read_text(encoding="utf-8")).get("draws", [])
+            previous = json.loads(output.read_text(encoding="utf-8")).get("draws", [])
             last_number = max(int(item["issue"][-3:]) for item in previous)
             upper_bound = min(160, last_number + 3)
         except (ValueError, KeyError, json.JSONDecodeError):
@@ -75,21 +77,33 @@ def main() -> None:
     else:
         upper_bound = min(160, int(datetime.now().timetuple().tm_yday * 3 / 7) + 8)
     with ThreadPoolExecutor(max_workers=8) as pool:
-        futures = [pool.submit(fetch, number) for number in range(1, upper_bound + 1)]
+        futures = [pool.submit(fetch, number, year) for number in range(1, upper_bound + 1)]
         draws = [result for future in as_completed(futures) if (result := future.result())]
     draws.sort(key=lambda item: item["issue"])
     if not draws:
         raise RuntimeError("未能从官方公告获取任何开奖数据，保留旧数据并退出")
     payload = {
         "game": "超级大乐透",
-        "year": YEAR,
+        "year": year,
         "updatedAt": datetime.now().astimezone().isoformat(timespec="seconds"),
         "source": "https://www.gdlottery.cn/f_html/kjgg/",
         "draws": draws,
     }
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"已保存 {len(draws)} 期数据到 {OUTPUT}")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"已保存 {len(draws)} 期数据到 {output}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--years", help="年份范围，例如 2022-2026")
+    args = parser.parse_args()
+    if args.years:
+        start, end = (int(value) for value in args.years.split("-", 1))
+        for year in range(start, end + 1):
+            update_year(year, full_history=year < YEAR)
+    else:
+        update_year(YEAR)
 
 
 if __name__ == "__main__":

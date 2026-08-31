@@ -61,3 +61,11 @@ def test_random_benchmark_is_reproducible():
     second = run_random_benchmark(draws, trials=20, seed=7)
     assert first["win_counts"] == second["win_counts"]
     assert first["prize_totals"] == second["prize_totals"]
+
+
+def test_load_draws_combines_all_cached_years():
+    draws = lottery_app.load_draws()
+    assert len(draws) == 700
+    assert draws[0]["issue"] == "22001"
+    assert draws[-1]["issue"] == "26098"
+    assert all(draw.get("prizes") for draw in draws)

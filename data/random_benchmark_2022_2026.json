@@ -1,0 +1,20 @@
+{
+  "trials": 10000,
+  "seed": 20260831,
+  "mean_wins": 46.8014,
+  "median_wins": 47.0,
+  "wins_p05": 36,
+  "wins_p95": 58,
+  "mean_prize": 392.7818,
+  "median_prize": 312.0,
+  "prize_p05": 217,
+  "prize_p95": 642,
+  "chance_profit": 0.64,
+  "wins_percentile": 55.19,
+  "prize_percentile": 20.82,
+  "period": {
+    "from": "2022-01-01",
+    "to": "2026-08-29",
+    "draws": 700
+  }
+}

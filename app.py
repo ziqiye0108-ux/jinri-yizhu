@@ -13,7 +13,7 @@ from backtest import run_backtest
 
 ROOT = Path(__file__).parent
 DATA_FILE = ROOT / "data" / "dlt_2026.json"
-BENCHMARK_FILE = ROOT / "data" / "random_benchmark_2026.json"
+BENCHMARK_FILE = ROOT / "data" / "random_benchmark_2022_2026.json"
 app = Flask(__name__)
 DRAW_WEEKDAYS = {0, 2, 5}  # 周一、周三、周六
 
@@ -36,17 +36,27 @@ def upcoming_draw_dates(start: date, count: int = 6) -> list[dict]:
 
 
 def load_draws() -> list[dict]:
-    try:
-        payload = json.loads(DATA_FILE.read_text(encoding="utf-8"))
-        return payload.get("draws", [])
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
+    draws = []
+    for path in sorted((ROOT / "data").glob("dlt_20[0-9][0-9].json")):
+        try:
+            draws.extend(json.loads(path.read_text(encoding="utf-8")).get("draws", []))
+        except json.JSONDecodeError:
+            continue
+    return sorted(draws, key=lambda item: item["issue"])
 
 
 @lru_cache(maxsize=4)
 def cached_experiment_report(data_mtime_ns: int) -> dict:
-    report = run_backtest(load_draws())
+    draws = load_draws()
+    report = run_backtest(draws)
     report["benchmark"] = json.loads(BENCHMARK_FILE.read_text(encoding="utf-8"))
+    report["period_from"] = min(draw["date"] for draw in draws)
+    report["period_to"] = max(draw["date"] for draw in draws)
+    report["splits"] = {
+        "training": sum(draw["date"][:4] in {"2022", "2023", "2024"} for draw in draws),
+        "validation": sum(draw["date"].startswith("2025") for draw in draws),
+        "holdout": sum(draw["date"].startswith("2026") for draw in draws),
+    }
     return report
 
 
@@ -127,7 +137,7 @@ def admin_backtest():
     auth = request.authorization
     if not password or not auth or auth.username != "admin" or not secrets.compare_digest(auth.password, password):
         return ("需要后台授权", 401, {"WWW-Authenticate": 'Basic realm="Backtest"'})
-    mtime = DATA_FILE.stat().st_mtime_ns if DATA_FILE.exists() else 0
+    mtime = sum(path.stat().st_mtime_ns for path in (ROOT / "data").glob("dlt_20[0-9][0-9].json"))
     return render_template("admin_backtest.html", report=cached_experiment_report(mtime))
 
 
