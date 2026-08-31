@@ -24,7 +24,7 @@ def test_active_recommendation_uses_only_prior_draws():
     draws_with_future = draws + [{"issue": "26999", "date": "2026-09-05", "front": [1, 2, 3, 4, 5], "back": [1, 2]}]
     second = lottery_app.recommendation("2026-09-02", draws_with_future)
     assert first == second
-    assert first["strategy"].startswith("多因子 80%")
+    assert first["strategy"].startswith("多因子 20%")
 
 
 def test_different_draw_dates_produce_different_hybrid_picks():

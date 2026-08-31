@@ -11,7 +11,7 @@ from lunar_python import Solar
 from multifactor_strategy import FusionConfig, _features, _shape_rates, _shape_signature
 
 
-METHOD = "多因子 80% + 日期卦象 20%"
+METHOD = "多因子 20% + 日期卦象 80%"
 
 
 def _normalize(values: dict[int, float]) -> dict[int, float]:
@@ -67,7 +67,7 @@ def _select(history: list[dict], draw_date: str, key: str, size: int, count: int
     mystical_combo = _normalize(mystical_combo)
 
     def combo_score(combo: tuple[int, ...]) -> tuple[float, int]:
-        value = .8 * statistical_combo[combo] + .2 * mystical_combo[combo]
+        value = .2 * statistical_combo[combo] + .8 * mystical_combo[combo]
         tie = int.from_bytes(sha256(f"hybrid-v1|{draw_date}|{key}|{combo}".encode()).digest()[:4])
         return value, tie
 
