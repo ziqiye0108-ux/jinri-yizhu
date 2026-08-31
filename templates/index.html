@@ -29,7 +29,10 @@
       <form id="pick-form">
         <label for="draw-date">开奖日期</label>
         <div class="controls">
-          <input id="draw-date" name="date" type="date" min="{{ today }}" value="{{ today }}" required>
+          <div class="date-control">
+            <span class="calendar-icon" aria-hidden="true"></span>
+            <input id="draw-date" name="date" type="date" min="{{ today }}" value="{{ today }}" required>
+          </div>
           <button type="submit">给我一注 <span aria-hidden="true">→</span></button>
         </div>
       </form>
