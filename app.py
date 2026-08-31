@@ -4,11 +4,12 @@ import hashlib
 import json
 import os
 import secrets
+from functools import lru_cache
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
-from backtest import run_backtest
+from backtest import build_experiment_report
 
 ROOT = Path(__file__).parent
 DATA_FILE = ROOT / "data" / "dlt_2026.json"
@@ -39,6 +40,11 @@ def load_draws() -> list[dict]:
         return payload.get("draws", [])
     except (FileNotFoundError, json.JSONDecodeError):
         return []
+
+
+@lru_cache(maxsize=4)
+def cached_experiment_report(data_mtime_ns: int) -> dict:
+    return build_experiment_report(load_draws())
 
 
 def recommendation(draw_date: str, draws: list[dict]) -> dict:
@@ -118,7 +124,8 @@ def admin_backtest():
     auth = request.authorization
     if not password or not auth or auth.username != "admin" or not secrets.compare_digest(auth.password, password):
         return ("需要后台授权", 401, {"WWW-Authenticate": 'Basic realm="Backtest"'})
-    return render_template("admin_backtest.html", report=run_backtest(load_draws()))
+    mtime = DATA_FILE.stat().st_mtime_ns if DATA_FILE.exists() else 0
+    return render_template("admin_backtest.html", report=cached_experiment_report(mtime))
 
 
 if __name__ == "__main__":

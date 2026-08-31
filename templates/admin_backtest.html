@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>周易选号实验回测</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='benchmark.css') }}">
 </head>
 <body>
   <main>
@@ -22,6 +23,16 @@
     <section class="method">
       <h2>固定实验口径</h2>
       <p>以开奖日农历年支数、月、日及 21:25 亥时起梅花易数上下卦与动爻，再以固定卦数轮转映射为一注不重复的 5+2 号码。算法只读取开奖前已知信息，不读取当期开奖号码。</p>
+    </section>
+    <section class="benchmark">
+      <div class="benchmark-head"><div><span>RANDOM BASELINE</span><h2>10,000 组随机基准</h2></div><small>固定种子 {{ report.benchmark.seed }} · 可复现</small></div>
+      <div class="benchmark-grid">
+        <article><small>随机平均中奖</small><strong>{{ '%.2f'|format(report.benchmark.mean_wins) }} 期</strong><p>90%区间 {{ report.benchmark.wins_p05 }}–{{ report.benchmark.wins_p95 }} 期</p></article>
+        <article><small>周易中奖位置</small><strong>第 {{ '%.1f'|format(report.benchmark.wins_percentile) }} 百分位</strong><p>本方法中奖 {{ report.winners }} 期</p></article>
+        <article><small>随机平均奖金</small><strong>¥{{ '%.2f'|format(report.benchmark.mean_prize) }}</strong><p>中位数 ¥{{ '%.0f'|format(report.benchmark.median_prize) }}</p></article>
+        <article><small>周易奖金位置</small><strong>第 {{ '%.1f'|format(report.benchmark.prize_percentile) }} 百分位</strong><p>本方法奖金 ¥{{ report.prize }}</p></article>
+        <article><small>随机盈利概率</small><strong>{{ '%.2f'|format(report.benchmark.chance_profit) }}%</strong><p>奖金超过 ¥{{ report.cost }}</p></article>
+      </div>
     </section>
     <div class="table-wrap">
       <table>

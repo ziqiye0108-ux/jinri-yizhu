@@ -52,3 +52,12 @@ def test_prize_rules_cover_old_and_new_versions():
     from backtest import prize_level
     assert prize_level("26013", 4, 2) == "四等奖"
     assert prize_level("26014", 4, 2) == "三等奖"
+
+
+def test_random_benchmark_is_reproducible():
+    from backtest import run_random_benchmark
+    draws = [{"issue": "26014", "date": "2026-02-02", "front": [1, 2, 3, 4, 5], "back": [1, 2], "prizes": {"七等奖": 5}}]
+    first = run_random_benchmark(draws, trials=20, seed=7)
+    second = run_random_benchmark(draws, trials=20, seed=7)
+    assert first["win_counts"] == second["win_counts"]
+    assert first["prize_totals"] == second["prize_totals"]

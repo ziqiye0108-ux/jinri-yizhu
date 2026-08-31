@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from datetime import date
+import random
+from statistics import mean, median
 
 from lunar_python import Solar
 
@@ -103,3 +105,50 @@ def run_backtest(draws: list[dict]) -> dict:
         "roi": ((total_prize - cost) / cost * 100) if cost else 0,
         "method": METHOD_VERSION,
     }
+
+
+def run_random_benchmark(draws: list[dict], trials: int = 10_000, seed: int = 20260831) -> dict:
+    rng = random.Random(seed)
+    win_counts, prize_totals = [], []
+    for _ in range(trials):
+        wins = 0
+        prize_total = 0
+        for draw in draws:
+            front = rng.sample(range(1, 36), 5)
+            back = rng.sample(range(1, 13), 2)
+            front_hits = len(set(front) & set(draw["front"]))
+            back_hits = len(set(back) & set(draw["back"]))
+            level = prize_level(draw["issue"], front_hits, back_hits)
+            if level:
+                wins += 1
+                prize_total += int(draw.get("prizes", {}).get(level, 0))
+        win_counts.append(wins)
+        prize_totals.append(prize_total)
+    win_sorted = sorted(win_counts)
+    prize_sorted = sorted(prize_totals)
+
+    def percentile(values: list[int], observed: float) -> float:
+        return sum(value <= observed for value in values) / len(values) * 100
+
+    def quantile(values: list[int], ratio: float) -> int:
+        return values[min(len(values) - 1, int((len(values) - 1) * ratio))]
+
+    return {
+        "trials": trials, "seed": seed,
+        "mean_wins": mean(win_counts), "median_wins": median(win_counts),
+        "wins_p05": quantile(win_sorted, 0.05), "wins_p95": quantile(win_sorted, 0.95),
+        "mean_prize": mean(prize_totals), "median_prize": median(prize_totals),
+        "prize_p05": quantile(prize_sorted, 0.05), "prize_p95": quantile(prize_sorted, 0.95),
+        "chance_profit": sum(value > len(draws) * 2 for value in prize_totals) / trials * 100,
+        "win_counts": win_counts, "prize_totals": prize_totals,
+        "wins_percentile": percentile(win_counts, 0), "prize_percentile": percentile(prize_totals, 0),
+    }
+
+
+def build_experiment_report(draws: list[dict]) -> dict:
+    report = run_backtest(draws)
+    benchmark = run_random_benchmark(draws)
+    benchmark["wins_percentile"] = sum(v <= report["winners"] for v in benchmark["win_counts"]) / benchmark["trials"] * 100
+    benchmark["prize_percentile"] = sum(v <= report["prize"] for v in benchmark["prize_totals"]) / benchmark["trials"] * 100
+    report["benchmark"] = {k: v for k, v in benchmark.items() if k not in {"win_counts", "prize_totals"}}
+    return report
