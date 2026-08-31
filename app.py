@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
@@ -11,6 +11,24 @@ from flask import Flask, jsonify, render_template, request
 ROOT = Path(__file__).parent
 DATA_FILE = ROOT / "data" / "dlt_2026.json"
 app = Flask(__name__)
+DRAW_WEEKDAYS = {0, 2, 5}  # 周一、周三、周六
+
+
+def upcoming_draw_dates(start: date, count: int = 6) -> list[dict]:
+    labels = "一二三四五六日"
+    result = []
+    current = start
+    while len(result) < count:
+        if current.weekday() in DRAW_WEEKDAYS:
+            result.append(
+                {
+                    "value": current.isoformat(),
+                    "weekday": f"周{labels[current.weekday()]}",
+                    "display": f"{current.month}月{current.day}日",
+                }
+            )
+        current += timedelta(days=1)
+    return result
 
 
 def load_draws() -> list[dict]:
@@ -55,9 +73,10 @@ def recommendation(draw_date: str, draws: list[dict]) -> dict:
 @app.get("/")
 def index():
     draws = load_draws()
+    upcoming = upcoming_draw_dates(date.today())
     return render_template(
         "index.html",
-        today=date.today().isoformat(),
+        upcoming=upcoming,
         draw_count=len(draws),
         latest=draws[-1] if draws else None,
     )
@@ -72,6 +91,8 @@ def recommend():
         return jsonify({"error": "请输入有效日期"}), 400
     if selected < date.today():
         return jsonify({"error": "请选择今天或未来的开奖日期"}), 400
+    if selected.weekday() not in DRAW_WEEKDAYS:
+        return jsonify({"error": "大乐透仅在周一、周三、周六开奖，请重新选择"}), 400
     draws = load_draws()
     return jsonify(
         {
