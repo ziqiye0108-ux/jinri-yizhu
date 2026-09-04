@@ -22,7 +22,7 @@ input { display:block; width:100%; min-width:0; max-width:100%; padding:0 18px; 
 .calendar-icon { display:none; }
 .field-label { display:block; margin-bottom:10px; font-size:13px; }
 #draw-date { display:none !important; }
-.date-picker-trigger { display:flex; align-items:center; width:100%; padding:0 16px; color:var(--ink); background:#fffdf7; }
+.date-picker-trigger { display:flex; align-items:center; width:100%; min-height:56px; padding:0 16px; border:1px solid var(--ink); color:var(--ink); background:#fffdf7; }
 .date-picker-trigger > span:nth-child(2) { flex:1; text-align:left; }
 .date-picker-trigger small,.date-picker-trigger strong { display:block; }
 .date-picker-trigger small { color:#777; font-size:11px; }
