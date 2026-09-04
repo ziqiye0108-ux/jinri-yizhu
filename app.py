@@ -4,14 +4,13 @@ import hashlib
 import json
 import os
 import secrets
+from collections import Counter
 from functools import lru_cache
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
 from backtest import run_backtest
-from multifactor_strategy import CANDIDATES as FUSION_CANDIDATES
-from hybrid_strategy import hybrid_pick
 
 ROOT = Path(__file__).parent
 DATA_FILE = ROOT / "data" / "dlt_2026.json"
@@ -20,8 +19,9 @@ MODEL_EXPERIMENT_FILE = ROOT / "data" / "model_experiment_2022_2026.json"
 MULTIFACTOR_EXPERIMENT_FILE = ROOT / "data" / "multifactor_experiment_2022_2026.json"
 DECOUPLED_EXPERIMENT_FILE = ROOT / "data" / "decoupled_experiment_2018_2026.json"
 app = Flask(__name__)
+PICK_WINDOW = 30
+PICK_STRATEGY = "近30期：前区最冷5个 + 后区最冷1个/中间态1个"
 DRAW_WEEKDAYS = {0, 2, 5}  # 周一、周三、周六
-ACTIVE_PICK_CONFIG = next(config for config in FUSION_CANDIDATES if config.name == "均值回归")
 
 
 def upcoming_draw_dates(start: date, count: int = 6) -> list[dict]:
@@ -69,6 +69,39 @@ def cached_experiment_report(data_mtime_ns: int) -> dict:
     return report
 
 
+def _frequency_rank(
+    history: list[dict], draw_date: str, key: str, size: int, nonce: int
+) -> list[int]:
+    """Rank numbers cold-to-hot with a stable date-based tie break."""
+    frequencies = Counter(
+        number for draw in history[-PICK_WINDOW:] for number in draw[key]
+    )
+
+    def rank_key(number: int) -> tuple[int, bytes]:
+        tie_break = hashlib.sha256(
+            f"cold-mid-v1|{draw_date}|{key}|{nonce}|{number}".encode()
+        ).digest()
+        return frequencies[number], tie_break
+
+    return sorted(range(1, size + 1), key=rank_key)
+
+
+def _cold_mid_pick(history: list[dict], draw_date: str, nonce: int = 0) -> dict:
+    front_ranked = _frequency_rank(history, draw_date, "front", 35, nonce)
+    back_ranked = _frequency_rank(history, draw_date, "back", 12, nonce)
+    middle_index = 5 + int.from_bytes(
+        hashlib.sha256(
+            f"cold-mid-v1|{draw_date}|back-middle|{nonce}".encode()
+        ).digest()[:2]
+    ) % 2
+    return {
+        "front": sorted(front_ranked[:5]),
+        "back": sorted([back_ranked[0], back_ranked[middle_index]]),
+        "strategy": PICK_STRATEGY,
+        "date_basis": f"开奖日前{min(PICK_WINDOW, len(history))}期频次",
+    }
+
+
 def recommendation(draw_date: str, draws: list[dict]) -> dict:
     existing = {
         tuple(item["front"] + item["back"])
@@ -76,37 +109,16 @@ def recommendation(draw_date: str, draws: list[dict]) -> dict:
         if item.get("date", "").startswith(draw_date[:4])
     }
     prior_draws = [draw for draw in draws if draw.get("date", "") < draw_date]
-    model_result = hybrid_pick(prior_draws, draw_date, ACTIVE_PICK_CONFIG)
-    if tuple(model_result["front"] + model_result["back"]) not in existing:
-        return {
-            "front": model_result["front"],
-            "back": model_result["back"],
-            "strategy": model_result["strategy"],
-            "dateBasis": model_result["date_basis"],
-        }
-
-    history_fingerprint = "|".join(
-        f'{d["issue"]}:{",".join(map(str, d["front"] + d["back"]))}' for d in draws
-    )
     nonce = 0
     while True:
-        digest = hashlib.sha256(
-            f"dlt-entertainment-v1|{draw_date}|{history_fingerprint}|{nonce}".encode()
-        ).digest()
-        front_pool = list(range(1, 36))
-        back_pool = list(range(1, 13))
-        front, back = [], []
-        cursor = 0
-        for _ in range(5):
-            front.append(front_pool.pop(digest[cursor] % len(front_pool)))
-            cursor += 1
-        for _ in range(2):
-            back.append(back_pool.pop(digest[cursor] % len(back_pool)))
-            cursor += 1
-        front.sort()
-        back.sort()
-        if tuple(front + back) not in existing:
-            return {"front": front, "back": back, "strategy": "多因子+日期卦象 · 碰撞回退"}
+        result = _cold_mid_pick(prior_draws, draw_date, nonce)
+        if tuple(result["front"] + result["back"]) not in existing:
+            return {
+                "front": result["front"],
+                "back": result["back"],
+                "strategy": result["strategy"],
+                "dateBasis": result["date_basis"],
+            }
         nonce += 1
 
 
@@ -140,7 +152,7 @@ def recommend():
             "date": value,
             "checkedAgainst": len(draws),
             "year": selected.year,
-            "notice": "号码仅供娱乐，由历史多因子规则生成，不代表中奖预测或收益承诺。",
+            "notice": "号码仅供娱乐，按开奖日前30期冷热频次生成，不代表中奖预测或收益承诺。",
         }
     )
 
