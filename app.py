@@ -8,6 +8,7 @@ from collections import Counter
 from functools import lru_cache
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from flask import Flask, jsonify, render_template, request
 from backtest import run_backtest
@@ -22,6 +23,11 @@ app = Flask(__name__)
 PICK_WINDOW = 30
 PICK_STRATEGY = "近30期：前区最冷5个 + 后区最冷1个/中间态1个"
 DRAW_WEEKDAYS = {0, 2, 5}  # 周一、周三、周六
+CHINA_TZ = ZoneInfo("Asia/Shanghai")
+
+
+def local_today() -> date:
+    return datetime.now(CHINA_TZ).date()
 
 
 def upcoming_draw_dates(start: date, count: int = 6) -> list[dict]:
@@ -125,7 +131,7 @@ def recommendation(draw_date: str, draws: list[dict]) -> dict:
 @app.get("/")
 def index():
     draws = load_draws()
-    upcoming = upcoming_draw_dates(date.today())
+    upcoming = upcoming_draw_dates(local_today(), count=1)
     return render_template(
         "index.html",
         upcoming=upcoming,
@@ -141,10 +147,14 @@ def recommend():
         selected = datetime.strptime(value, "%Y-%m-%d").date()
     except (TypeError, ValueError):
         return jsonify({"error": "请输入有效日期"}), 400
-    if selected < date.today():
+    today = local_today()
+    if selected < today:
         return jsonify({"error": "请选择今天或未来的开奖日期"}), 400
     if selected.weekday() not in DRAW_WEEKDAYS:
         return jsonify({"error": "大乐透仅在周一、周三、周六开奖，请重新选择"}), 400
+    next_draw = date.fromisoformat(upcoming_draw_dates(today, count=1)[0]["value"])
+    if selected != next_draw:
+        return jsonify({"error": f"当前仅支持最近开奖日：{next_draw.isoformat()}"}), 400
     draws = load_draws()
     return jsonify(
         {

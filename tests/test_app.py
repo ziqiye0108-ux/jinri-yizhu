@@ -62,10 +62,32 @@ def test_health_endpoint():
     assert response.json["status"] == "ok"
 
 
-def test_upcoming_dates_only_use_draw_weekdays():
-    days = lottery_app.upcoming_draw_dates(date(2026, 8, 31))
-    assert len(days) == 6
-    assert all(date.fromisoformat(day["value"]).weekday() in {0, 2, 5} for day in days)
+def test_index_only_exposes_nearest_draw_date():
+    client = lottery_app.app.test_client()
+    response = client.get("/")
+    nearest = lottery_app.upcoming_draw_dates(lottery_app.local_today(), count=1)[0]
+    assert response.status_code == 200
+    assert response.text.count(f'value="{nearest["value"]}"') == 1
+    assert "仅预测最近一个开奖日" in response.text
+
+
+def test_api_rejects_later_draw_date():
+    client = lottery_app.app.test_client()
+    nearest = date.fromisoformat(
+        lottery_app.upcoming_draw_dates(lottery_app.local_today(), count=1)[0]["value"]
+    )
+    later = lottery_app.upcoming_draw_dates(nearest + lottery_app.timedelta(days=1), count=1)[0]["value"]
+    response = client.post("/api/recommend", json={"date": later})
+    assert response.status_code == 400
+    assert "当前仅支持最近开奖日" in response.json["error"]
+
+
+def test_api_accepts_nearest_draw_date():
+    client = lottery_app.app.test_client()
+    nearest = lottery_app.upcoming_draw_dates(lottery_app.local_today(), count=1)[0]["value"]
+    response = client.post("/api/recommend", json={"date": nearest})
+    assert response.status_code == 200
+    assert response.json["date"] == nearest
 
 
 def test_non_draw_day_is_rejected():
