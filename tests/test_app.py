@@ -1,3 +1,5 @@
+import json
+
 import app as lottery_app
 from datetime import date
 
@@ -24,16 +26,33 @@ def test_active_recommendation_uses_only_prior_draws():
     draws_with_future = draws + [{"issue": "26999", "date": "2026-09-05", "front": [1, 2, 3, 4, 5], "back": [1, 2]}]
     second = lottery_app.recommendation("2026-09-02", draws_with_future)
     assert first == second
-    assert first["strategy"].startswith("多因子 20%")
+    assert first["strategy"] == lottery_app.PICK_STRATEGY
 
 
-def test_different_draw_dates_produce_different_hybrid_picks():
+def test_multiple_draw_dates_produce_valid_stable_picks():
     draws = lottery_app.load_draws()
-    monday = lottery_app.recommendation("2026-09-07", draws)
-    wednesday = lottery_app.recommendation("2026-09-09", draws)
-    saturday = lottery_app.recommendation("2026-09-12", draws)
-    combinations = {(tuple(item["front"]), tuple(item["back"])) for item in [monday, wednesday, saturday]}
-    assert len(combinations) == 3
+    for draw_date in ("2026-09-07", "2026-09-09", "2026-09-12"):
+        first = lottery_app.recommendation(draw_date, draws)
+        second = lottery_app.recommendation(draw_date, draws)
+        assert first == second
+        assert len(first["front"]) == len(set(first["front"])) == 5
+        assert len(first["back"]) == len(set(first["back"])) == 2
+
+
+def test_cold_mid_strategy_uses_30_prior_draws():
+    history = [
+        {
+            "issue": f"25{index:03d}",
+            "date": f"2025-01-{index + 1:02d}",
+            "front": [1, 2, 3, 4, 5],
+            "back": [1, 2],
+        }
+        for index in range(30)
+    ]
+    result = lottery_app._cold_mid_pick(history, "2026-09-07")
+    assert not set(result["front"]) & {1, 2, 3, 4, 5}
+    assert result["back"][0] not in {1, 2}
+    assert result["strategy"] == lottery_app.PICK_STRATEGY
 
 
 def test_health_endpoint():
@@ -86,9 +105,13 @@ def test_random_benchmark_is_reproducible():
 
 def test_load_draws_combines_all_cached_years():
     draws = lottery_app.load_draws()
-    assert len(draws) == 1285
+    archives = [
+        json.loads(path.read_text(encoding="utf-8"))["draws"]
+        for path in sorted((lottery_app.ROOT / "data").glob("dlt_20[0-9][0-9].json"))
+    ]
+    assert len(draws) == sum(len(archive) for archive in archives)
     assert draws[0]["issue"] == "18001"
-    assert draws[-1]["issue"] == "26098"
+    assert draws[-1]["issue"] == max(draw["issue"] for archive in archives for draw in archive)
     assert all(draw.get("prizes") for draw in draws)
 
 
