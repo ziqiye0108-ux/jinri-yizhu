@@ -1,3 +1,5 @@
+import json
+
 import app as lottery_app
 from datetime import date
 
@@ -103,9 +105,13 @@ def test_random_benchmark_is_reproducible():
 
 def test_load_draws_combines_all_cached_years():
     draws = lottery_app.load_draws()
-    assert len(draws) == 1285
+    archives = [
+        json.loads(path.read_text(encoding="utf-8"))["draws"]
+        for path in sorted((lottery_app.ROOT / "data").glob("dlt_20[0-9][0-9].json"))
+    ]
+    assert len(draws) == sum(len(archive) for archive in archives)
     assert draws[0]["issue"] == "18001"
-    assert draws[-1]["issue"] == "26098"
+    assert draws[-1]["issue"] == max(draw["issue"] for archive in archives for draw in archive)
     assert all(draw.get("prizes") for draw in draws)
 
 
