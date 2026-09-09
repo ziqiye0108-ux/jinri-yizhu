@@ -4,7 +4,7 @@ services:
     container_name: jinri-yizhu
     restart: unless-stopped
     ports:
-      - "80:8000"
+      - "127.0.0.1:8001:8000"
     environment:
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
     mem_limit: 512m
