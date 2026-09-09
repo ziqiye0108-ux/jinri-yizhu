@@ -22,6 +22,11 @@ DECOUPLED_EXPERIMENT_FILE = ROOT / "data" / "decoupled_experiment_2018_2026.json
 app = Flask(__name__)
 PICK_WINDOW = 30
 PICK_STRATEGY = "近30期：前区最冷5个 + 后区最冷1个/中间态1个"
+PICK_STRATEGIES = {
+    "cold_mid": PICK_STRATEGY,
+    "all_cold": "近30期：前区最冷5个 + 后区最冷2个",
+    "chcch": "近30期CHCCH：前区冷2/热2/冷1 + 后区冷1/热1",
+}
 DRAW_WEEKDAYS = {0, 2, 5}  # 周一、周三、周六
 CHINA_TZ = ZoneInfo("Asia/Shanghai")
 
@@ -92,6 +97,14 @@ def _frequency_rank(
     return sorted(range(1, size + 1), key=rank_key)
 
 
+def _rank_numbers(
+    history: list[dict], draw_date: str, key: str, numbers: range, nonce: int
+) -> list[int]:
+    ranked = _frequency_rank(history, draw_date, key, max(numbers), nonce)
+    allowed = set(numbers)
+    return [number for number in ranked if number in allowed]
+
+
 def _cold_mid_pick(history: list[dict], draw_date: str, nonce: int = 0) -> dict:
     front_ranked = _frequency_rank(history, draw_date, "front", 35, nonce)
     back_ranked = _frequency_rank(history, draw_date, "back", 12, nonce)
@@ -108,7 +121,43 @@ def _cold_mid_pick(history: list[dict], draw_date: str, nonce: int = 0) -> dict:
     }
 
 
-def recommendation(draw_date: str, draws: list[dict]) -> dict:
+def _all_cold_pick(history: list[dict], draw_date: str, nonce: int = 0) -> dict:
+    front_ranked = _frequency_rank(history, draw_date, "front", 35, nonce)
+    back_ranked = _frequency_rank(history, draw_date, "back", 12, nonce)
+    return {
+        "front": sorted(front_ranked[:5]),
+        "back": sorted(back_ranked[:2]),
+        "strategy": PICK_STRATEGIES["all_cold"],
+        "date_basis": f"开奖日前{min(PICK_WINDOW, len(history))}期频次",
+    }
+
+
+def _chcch_pick(history: list[dict], draw_date: str, nonce: int = 0) -> dict:
+    low_front = _rank_numbers(history, draw_date, "front", range(1, 13), nonce)
+    mid_front = _rank_numbers(history, draw_date, "front", range(13, 25), nonce)
+    high_front = _rank_numbers(history, draw_date, "front", range(25, 36), nonce)
+    low_back = _rank_numbers(history, draw_date, "back", range(1, 7), nonce)
+    high_back = _rank_numbers(history, draw_date, "back", range(7, 13), nonce)
+    return {
+        "front": sorted(low_front[:2] + mid_front[-2:] + high_front[:1]),
+        "back": sorted([low_back[0], high_back[-1]]),
+        "strategy": PICK_STRATEGIES["chcch"],
+        "date_basis": f"开奖日前{min(PICK_WINDOW, len(history))}期频次",
+    }
+
+
+PICKERS = {
+    "cold_mid": _cold_mid_pick,
+    "all_cold": _all_cold_pick,
+    "chcch": _chcch_pick,
+}
+
+
+def recommendation(
+    draw_date: str, draws: list[dict], strategy_id: str = "cold_mid"
+) -> dict:
+    if strategy_id not in PICKERS:
+        raise ValueError("不支持的选号策略")
     existing = {
         tuple(item["front"] + item["back"])
         for item in draws
@@ -117,12 +166,13 @@ def recommendation(draw_date: str, draws: list[dict]) -> dict:
     prior_draws = [draw for draw in draws if draw.get("date", "") < draw_date]
     nonce = 0
     while True:
-        result = _cold_mid_pick(prior_draws, draw_date, nonce)
+        result = PICKERS[strategy_id](prior_draws, draw_date, nonce)
         if tuple(result["front"] + result["back"]) not in existing:
             return {
                 "front": result["front"],
                 "back": result["back"],
                 "strategy": result["strategy"],
+                "strategyId": strategy_id,
                 "dateBasis": result["date_basis"],
             }
         nonce += 1
@@ -135,6 +185,7 @@ def index():
     return render_template(
         "index.html",
         upcoming=upcoming,
+        strategies=PICK_STRATEGIES,
         draw_count=len(draws),
         latest=draws[-1] if draws else None,
     )
@@ -142,7 +193,9 @@ def index():
 
 @app.post("/api/recommend")
 def recommend():
-    value = (request.get_json(silent=True) or {}).get("date", "")
+    payload = request.get_json(silent=True) or {}
+    value = payload.get("date", "")
+    strategy_id = payload.get("strategy", "cold_mid")
     try:
         selected = datetime.strptime(value, "%Y-%m-%d").date()
     except (TypeError, ValueError):
@@ -155,10 +208,12 @@ def recommend():
     next_draw = date.fromisoformat(upcoming_draw_dates(today, count=1)[0]["value"])
     if selected != next_draw:
         return jsonify({"error": f"当前仅支持最近开奖日：{next_draw.isoformat()}"}), 400
+    if strategy_id not in PICKERS:
+        return jsonify({"error": "请选择有效的选号策略"}), 400
     draws = load_draws()
     return jsonify(
         {
-            **recommendation(value, draws),
+            **recommendation(value, draws, strategy_id),
             "date": value,
             "checkedAgainst": len(draws),
             "year": selected.year,

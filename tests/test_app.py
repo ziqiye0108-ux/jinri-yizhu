@@ -55,6 +55,32 @@ def test_cold_mid_strategy_uses_30_prior_draws():
     assert result["strategy"] == lottery_app.PICK_STRATEGY
 
 
+def test_all_cold_strategy_selects_coldest_numbers():
+    history = [
+        {
+            "issue": f"25{index:03d}",
+            "date": f"2025-01-{index + 1:02d}",
+            "front": [1, 2, 3, 4, 5],
+            "back": [1, 2],
+        }
+        for index in range(30)
+    ]
+    result = lottery_app.recommendation("2026-09-07", history, "all_cold")
+    assert not set(result["front"]) & {1, 2, 3, 4, 5}
+    assert not set(result["back"]) & {1, 2}
+    assert result["strategyId"] == "all_cold"
+
+
+def test_chcch_strategy_preserves_zone_structure():
+    result = lottery_app.recommendation("2026-09-07", lottery_app.load_draws(), "chcch")
+    assert sum(1 <= number <= 12 for number in result["front"]) == 2
+    assert sum(13 <= number <= 24 for number in result["front"]) == 2
+    assert sum(25 <= number <= 35 for number in result["front"]) == 1
+    assert sum(1 <= number <= 6 for number in result["back"]) == 1
+    assert sum(7 <= number <= 12 for number in result["back"]) == 1
+    assert result["strategyId"] == "chcch"
+
+
 def test_health_endpoint():
     client = lottery_app.app.test_client()
     response = client.get("/health")
@@ -69,6 +95,7 @@ def test_index_only_exposes_nearest_draw_date():
     assert response.status_code == 200
     assert response.text.count(f'value="{nearest["value"]}"') == 1
     assert "仅预测最近一个开奖日" in response.text
+    assert response.text.count("<option") == 3
 
 
 def test_api_rejects_later_draw_date():
@@ -88,6 +115,16 @@ def test_api_accepts_nearest_draw_date():
     response = client.post("/api/recommend", json={"date": nearest})
     assert response.status_code == 200
     assert response.json["date"] == nearest
+
+
+def test_api_rejects_unknown_strategy():
+    client = lottery_app.app.test_client()
+    nearest = lottery_app.upcoming_draw_dates(lottery_app.local_today(), count=1)[0]["value"]
+    response = client.post(
+        "/api/recommend", json={"date": nearest, "strategy": "unknown"}
+    )
+    assert response.status_code == 400
+    assert response.json["error"] == "请选择有效的选号策略"
 
 
 def test_non_draw_day_is_rejected():

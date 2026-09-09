@@ -34,6 +34,14 @@
           <input id="draw-date" name="date" value="{{ upcoming[0].value }}" hidden>
           <button id="recommend-button" type="submit">给我一注 <span aria-hidden="true">→</span></button>
         </div>
+        <label class="strategy-field" for="pick-strategy">
+          <span class="field-label">选号策略</span>
+          <select id="pick-strategy" name="strategy">
+            {% for strategy_id, strategy_name in strategies.items() %}
+              <option value="{{ strategy_id }}"{% if strategy_id == "cold_mid" %} selected{% endif %}>{{ strategy_name }}</option>
+            {% endfor %}
+          </select>
+        </label>
       </form>
 
       <div id="result" class="result" hidden aria-live="polite">

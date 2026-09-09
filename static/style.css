@@ -17,6 +17,7 @@ form { padding-top:27px; }
 label { display:block; margin-bottom:10px; font-size:13px; }
 .controls { display:grid; grid-template-columns:1fr auto; gap:12px; }
 input,button { min-height:56px; border:1px solid var(--ink); border-radius:0; font:600 16px "Noto Serif SC",serif; }
+select { width:100%; min-height:52px; padding:0 14px; border:1px solid var(--ink); color:var(--ink); background:#fffdf7; font:600 14px "Noto Serif SC",serif; }
 input { display:block; width:100%; min-width:0; max-width:100%; padding:0 18px; color:var(--ink); background:#fffdf7; }
 .date-control { min-width:0; }
 .calendar-icon { display:none; }
@@ -27,6 +28,7 @@ input { display:block; width:100%; min-width:0; max-width:100%; padding:0 18px; 
 .date-picker-trigger small,.date-picker-trigger strong { display:block; }
 .date-picker-trigger small { color:#777; font-size:11px; }
 .date-picker-trigger strong { margin-top:3px; font-size:16px; }
+.strategy-field { margin:18px 0 0; }
 .chevron { font-size:28px; font-weight:400; }
 .calendar-sheet[hidden] { display:none; }
 .calendar-sheet { position:fixed; inset:0; z-index:20; }

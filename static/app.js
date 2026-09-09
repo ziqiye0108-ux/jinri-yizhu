@@ -5,6 +5,7 @@ const meta = document.querySelector('#result-meta');
 const error = document.querySelector('#error');
 const button = document.querySelector('#recommend-button');
 const dateInput = document.querySelector('#draw-date');
+const strategyInput = document.querySelector('#pick-strategy');
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -16,7 +17,7 @@ form.addEventListener('submit', async (event) => {
     const response = await fetch('/api/recommend', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({date: dateInput.value})
+      body: JSON.stringify({date: dateInput.value, strategy: strategyInput.value})
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || '暂时无法生成号码');
@@ -25,7 +26,7 @@ form.addEventListener('submit', async (event) => {
       '<i></i>',
       ...data.back.map(n => `<span class="ball back">${String(n).padStart(2, '0')}</span>`)
     ].join('');
-    meta.textContent = `${data.date} · 仅适用于本期开奖`;
+    meta.textContent = `${data.date} · ${data.strategy} · 仅适用于本期开奖`;
     result.hidden = false;
   } catch (err) {
     error.textContent = err.message;
