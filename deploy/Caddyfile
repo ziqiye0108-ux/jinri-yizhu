@@ -1,0 +1,8 @@
+yzq-apps.com {
+    respond "YZQ Apps" 200
+}
+
+lottery.yzq-apps.com {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:8001
+}
