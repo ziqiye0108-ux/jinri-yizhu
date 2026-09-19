@@ -26,6 +26,10 @@ PICK_STRATEGIES = {
     "cold_mid": PICK_STRATEGY,
     "all_cold": "近30期：前区最冷5个 + 后区最冷2个",
     "chcch": "近30期CHCCH：前区冷2/热2/冷1 + 后区冷1/热1",
+    "all_cold_50": "近50期全冷：前区最冷5个 + 后区最冷2个",
+    "all_hot_50": "近50期全热：前区最热5个 + 后区最热2个",
+    "all_hot_30": "近30期全热：前区最热5个 + 后区最热2个",
+    "chcch_50": "近50期CHCCH：前区冷2/热2/冷1 + 后区冷1/热1",
 }
 DRAW_WEEKDAYS = {0, 2, 5}  # 周一、周三、周六
 CHINA_TZ = ZoneInfo("Asia/Shanghai")
@@ -81,11 +85,12 @@ def cached_experiment_report(data_mtime_ns: int) -> dict:
 
 
 def _frequency_rank(
-    history: list[dict], draw_date: str, key: str, size: int, nonce: int
+    history: list[dict], draw_date: str, key: str, size: int, nonce: int,
+    window: int = PICK_WINDOW,
 ) -> list[int]:
     """Rank numbers cold-to-hot with a stable date-based tie break."""
     frequencies = Counter(
-        number for draw in history[-PICK_WINDOW:] for number in draw[key]
+        number for draw in history[-window:] for number in draw[key]
     )
 
     def rank_key(number: int) -> tuple[int, bytes]:
@@ -98,9 +103,10 @@ def _frequency_rank(
 
 
 def _rank_numbers(
-    history: list[dict], draw_date: str, key: str, numbers: range, nonce: int
+    history: list[dict], draw_date: str, key: str, numbers: range, nonce: int,
+    window: int = PICK_WINDOW,
 ) -> list[int]:
-    ranked = _frequency_rank(history, draw_date, key, max(numbers), nonce)
+    ranked = _frequency_rank(history, draw_date, key, max(numbers), nonce, window)
     allowed = set(numbers)
     return [number for number in ranked if number in allowed]
 
@@ -132,24 +138,75 @@ def _all_cold_pick(history: list[dict], draw_date: str, nonce: int = 0) -> dict:
     }
 
 
+def _temperature_pick(
+    history: list[dict], draw_date: str, nonce: int, *, window: int, hot: bool,
+    strategy_id: str,
+) -> dict:
+    front_ranked = _frequency_rank(history, draw_date, "front", 35, nonce, window)
+    back_ranked = _frequency_rank(history, draw_date, "back", 12, nonce, window)
+    selected_front = front_ranked[-5:] if hot else front_ranked[:5]
+    selected_back = back_ranked[-2:] if hot else back_ranked[:2]
+    return {
+        "front": sorted(selected_front),
+        "back": sorted(selected_back),
+        "strategy": PICK_STRATEGIES[strategy_id],
+        "date_basis": f"开奖日前{min(window, len(history))}期频次",
+    }
+
+
+def _all_cold_50_pick(history: list[dict], draw_date: str, nonce: int = 0) -> dict:
+    return _temperature_pick(
+        history, draw_date, nonce, window=50, hot=False, strategy_id="all_cold_50"
+    )
+
+
+def _all_hot_50_pick(history: list[dict], draw_date: str, nonce: int = 0) -> dict:
+    return _temperature_pick(
+        history, draw_date, nonce, window=50, hot=True, strategy_id="all_hot_50"
+    )
+
+
+def _all_hot_30_pick(history: list[dict], draw_date: str, nonce: int = 0) -> dict:
+    return _temperature_pick(
+        history, draw_date, nonce, window=30, hot=True, strategy_id="all_hot_30"
+    )
+
+
 def _chcch_pick(history: list[dict], draw_date: str, nonce: int = 0) -> dict:
-    low_front = _rank_numbers(history, draw_date, "front", range(1, 13), nonce)
-    mid_front = _rank_numbers(history, draw_date, "front", range(13, 25), nonce)
-    high_front = _rank_numbers(history, draw_date, "front", range(25, 36), nonce)
-    low_back = _rank_numbers(history, draw_date, "back", range(1, 7), nonce)
-    high_back = _rank_numbers(history, draw_date, "back", range(7, 13), nonce)
+    return _chcch_window_pick(history, draw_date, nonce, window=30, strategy_id="chcch")
+
+
+def _chcch_window_pick(
+    history: list[dict], draw_date: str, nonce: int, *, window: int,
+    strategy_id: str,
+) -> dict:
+    low_front = _rank_numbers(history, draw_date, "front", range(1, 13), nonce, window)
+    mid_front = _rank_numbers(history, draw_date, "front", range(13, 25), nonce, window)
+    high_front = _rank_numbers(history, draw_date, "front", range(25, 36), nonce, window)
+    low_back = _rank_numbers(history, draw_date, "back", range(1, 7), nonce, window)
+    high_back = _rank_numbers(history, draw_date, "back", range(7, 13), nonce, window)
     return {
         "front": sorted(low_front[:2] + mid_front[-2:] + high_front[:1]),
         "back": sorted([low_back[0], high_back[-1]]),
-        "strategy": PICK_STRATEGIES["chcch"],
-        "date_basis": f"开奖日前{min(PICK_WINDOW, len(history))}期频次",
+        "strategy": PICK_STRATEGIES[strategy_id],
+        "date_basis": f"开奖日前{min(window, len(history))}期频次",
     }
+
+
+def _chcch_50_pick(history: list[dict], draw_date: str, nonce: int = 0) -> dict:
+    return _chcch_window_pick(
+        history, draw_date, nonce, window=50, strategy_id="chcch_50"
+    )
 
 
 PICKERS = {
     "cold_mid": _cold_mid_pick,
     "all_cold": _all_cold_pick,
     "chcch": _chcch_pick,
+    "all_cold_50": _all_cold_50_pick,
+    "all_hot_50": _all_hot_50_pick,
+    "all_hot_30": _all_hot_30_pick,
+    "chcch_50": _chcch_50_pick,
 }
 
 
@@ -217,7 +274,7 @@ def recommend():
             "date": value,
             "checkedAgainst": len(draws),
             "year": selected.year,
-            "notice": "号码仅供娱乐，按开奖日前30期冷热频次生成，不代表中奖预测或收益承诺。",
+            "notice": "号码仅供娱乐，按所选规则的开奖日前历史频次生成，不代表中奖预测或收益承诺。",
         }
     )
 

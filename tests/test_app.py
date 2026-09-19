@@ -95,7 +95,45 @@ def test_index_only_exposes_nearest_draw_date():
     assert response.status_code == 200
     assert response.text.count(f'value="{nearest["value"]}"') == 1
     assert "仅预测最近一个开奖日" in response.text
-    assert response.text.count("<option") == 3
+    assert response.text.count("<option") == 7
+
+
+def test_new_temperature_strategies_use_requested_windows():
+    history = []
+    for index in range(50):
+        older = index < 20
+        history.append(
+            {
+                "issue": f"25{index:03d}",
+                "date": f"2025-{index // 28 + 1:02d}-{index % 28 + 1:02d}",
+                "front": [1, 2, 3, 4, 5] if older else [6, 7, 8, 9, 10],
+                "back": [1, 2] if older else [3, 4],
+            }
+        )
+
+    hot_30 = lottery_app.recommendation("2026-09-07", history, "all_hot_30")
+    hot_50 = lottery_app.recommendation("2026-09-07", history, "all_hot_50")
+    cold_50 = lottery_app.recommendation("2026-09-07", history, "all_cold_50")
+
+    assert hot_30["front"] == [6, 7, 8, 9, 10]
+    assert hot_50["front"] == [6, 7, 8, 9, 10]
+    assert not set(cold_50["front"]) & set(range(1, 11))
+    assert hot_30["dateBasis"] == "开奖日前30期频次"
+    assert hot_50["dateBasis"] == "开奖日前50期频次"
+    assert cold_50["dateBasis"] == "开奖日前50期频次"
+
+
+def test_chcch_50_uses_50_draw_window_and_preserves_zones():
+    result = lottery_app.recommendation(
+        "2026-09-07", lottery_app.load_draws(), "chcch_50"
+    )
+    assert sum(1 <= number <= 12 for number in result["front"]) == 2
+    assert sum(13 <= number <= 24 for number in result["front"]) == 2
+    assert sum(25 <= number <= 35 for number in result["front"]) == 1
+    assert sum(1 <= number <= 6 for number in result["back"]) == 1
+    assert sum(7 <= number <= 12 for number in result["back"]) == 1
+    assert result["strategyId"] == "chcch_50"
+    assert result["dateBasis"] == "开奖日前50期频次"
 
 
 def test_api_rejects_later_draw_date():
